@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "Pet-o-nator",
+			"path": "Arduino\\Code\\Pet-o-nator"
+		}
+	],
+	"settings": {}
+}

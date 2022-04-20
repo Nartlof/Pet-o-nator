@@ -19,7 +19,7 @@ double TargetTemp = 0;
 double ReadTemp = 0;
 
 // Specify the links and initial tuning parameters
-double Kp = 120, Ki = 14, Kd = 120;
+double Kp = 120, Ki = 14, Kd = 60;
 PID myPID(&ReadTemp, &PwmValue, &TargetTemp, Kp, Ki, Kd, DIRECT);
 
 // Function to control the heater via timer interrupt
@@ -80,28 +80,33 @@ void setup()
 
 void loop()
 {
+  static long LoopCount = millis();
   static double avarege = analogRead(NtcPin);
   double NtcResistance = SenseResistor * (1024.0 - avarege) / avarege;
 
-  TargetTemp = 473; // float(analogRead(A1) / 4 + 273) / 16.0 + TargetTemp * 15.0 / 16.0;
+  TargetTemp = float(analogRead(A1) / 4 + 273) / 16.0 + TargetTemp * 15.0 / 16.0;
 
   // Loading ADC for the NTC
-  avarege = (analogRead(NtcPin) + 15 * avarege) / 16;
+  avarege = analogRead(NtcPin); // (analogRead(NtcPin) + 15 * avarege) / 16;
 
   NtcResistance = SenseResistor * (1024.0 - avarege) / avarege;
   ReadTemp = Temperature(NtcResistance);
   myPID.Compute();
-  lcd.clear();
-  lcd.print(NtcResistance);
-  lcd.print("R");
-  lcd.setCursor(11, 0);
-  lcd.print(PwmValue);
-  lcd.setCursor(0, 1);
-  lcd.print(TargetTemp - 273);
-  lcd.print("C");
-  lcd.setCursor(8, 1);
-  lcd.print(ReadTemp - 273);
-  lcd.print("C");
+  if (millis() - LoopCount > 500)
+  {
+    lcd.clear();
+    lcd.print(NtcResistance);
+    lcd.print("R");
+    lcd.setCursor(11, 0);
+    lcd.print(PwmValue);
+    lcd.setCursor(0, 1);
+    lcd.print(TargetTemp - 273);
+    lcd.print("C");
+    lcd.setCursor(8, 1);
+    lcd.print(ReadTemp - 273);
+    lcd.print("C");
+    LoopCount = millis();
+  }
 
   delay(10);
 }

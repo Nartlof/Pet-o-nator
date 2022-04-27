@@ -4,8 +4,11 @@
 #define USE_TIMER_1 true
 #include <TimerInterrupt.h>
 
+// NTC and PWM definitions
 #define NtcPin A0
-#define SenseResistor 9800.0
+#define SenseResistor1 9800.0
+#define SenseResistor2 555.0
+#define ResistorSelectingPin 7
 #define PwmPin 6
 
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
@@ -53,6 +56,27 @@ double Temperature(double NtcReading)
   return double(1 / eq);
 }
 
+double ReadNtc()
+{
+  static double SenseResistor = SenseResistor1;
+  double NtcReading = analogRead(NtcPin);
+  double NtcResistance = SenseResistor * (1024.0 - NtcReading) / NtcReading;
+  if (NtcResistance < SenseResistor1 / 10)
+  {
+    // If resistence is too low, change to the lower value
+    SenseResistor = 1 / (1 / SenseResistor1 + 1 / SenseResistor2);
+    pinMode(ResistorSelectingPin, OUTPUT);
+    digitalWrite(ResistorSelectingPin, LOW);
+  }
+  if (NtcResistance > 5 * SenseResistor2)
+  {
+    // If resistance is too high, go back to the high resistor
+    pinMode(ResistorSelectingPin, INPUT);
+    SenseResistor = SenseResistor1;
+  }
+  return NtcResistance;
+}
+
 void setup()
 {
   // set up the LCD's number of columns and rows:
@@ -65,6 +89,8 @@ void setup()
 
   // Setting up pins
   pinMode(PwmPin, OUTPUT);
+  // Put the resistor selection in high impedance
+  pinMode(ResistorSelectingPin, INPUT);
 
   // Setting up PID
   myPID.SetOutputLimits(0, 1024);
@@ -81,15 +107,13 @@ void setup()
 void loop()
 {
   static long LoopCount = millis();
-  static double avarege = analogRead(NtcPin);
-  double NtcResistance = SenseResistor * (1024.0 - avarege) / avarege;
-
-  TargetTemp = float(analogRead(A1) / 4 + 273) / 16.0 + TargetTemp * 15.0 / 16.0;
+  TargetTemp = float(analogRead(A1) / 4 + 273+20) / 16.0 + TargetTemp * 15.0 / 16.0;
 
   // Loading ADC for the NTC
-  avarege = analogRead(NtcPin); // (analogRead(NtcPin) + 15 * avarege) / 16;
+  // avarege = analogRead(NtcPin); // (analogRead(NtcPin) + 15 * avarege) / 16;
 
-  NtcResistance = SenseResistor * (1024.0 - avarege) / avarege;
+  // NtcResistance = SenseResistor * (1024.0 - avarege) / avarege;
+  double NtcResistance = ReadNtc();
   ReadTemp = Temperature(NtcResistance);
   myPID.Compute();
   if (millis() - LoopCount > 500)

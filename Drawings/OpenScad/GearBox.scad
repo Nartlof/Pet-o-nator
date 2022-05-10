@@ -8,6 +8,7 @@ IntermidiateGearAxis = 4;
 IntermidiateGearBushing = 6.35;
 IntermidiateGearThickness = 10;
 InterGearGap = 1;
+FirstGearModulus = 2;
 
 
 NozzleHeight = 35;
@@ -63,11 +64,11 @@ SpoolFenseDiameter = SpoolExternalDiameter + 2 * (2 * NozzleHeight / 3);
 HubHeigth = SpoolWidth + 2 * PartsMinThickness + IntermidiateGearThickness;
 echo("Altura do hub=", HubHeigth);
 
-//Definição das engranagens de saída
-ExitGearTeeth = 15;
+//Definição das engranagens de saída. Deve ser um número par.
+ExitGearTeeth = 16;
 
-//Definição da primeira engranagem, que se atrala ao carretel
-FirstGearTeeth = floor(SpoolExternalDiameter + NozzleHeight);
+//Definição da primeira engranagem, que se atrala ao carretel.
+FirstGearTeeth = floor((SpoolExternalDiameter + NozzleHeight)/FirstGearModulus)*FirstGearModulus;
 SecondGearTeeth = floor(FirstGearTeeth - (Bearing608ExternalDiamenter + PartsMinThickness - ExitGearTeeth/2));
 ThirdGearTeeth = floor(SecondGearTeeth - ExitGearTeeth/2);
 FourthGearTeeth = floor((ThirdGearTeeth - ExitGearTeeth/2)/MotorGearModulus);
@@ -116,10 +117,10 @@ module PositionFourthGear(){
                 children();
 }
 
-module ExitGear(AxisDiameter = IntermidiateGearAxis, Direction = Outwards, Elevation = -1){
+module ExitGear(AxisDiameter = IntermidiateGearAxis, Direction = Outwards, Elevation = -1, Modulus = 1){
     Elev = (Elevation == -1) ? InterGearGap+IntermidiateGearThickness : Elevation;
     translate([0,0,Elev])
-        herringbone_gear(modul=1, tooth_number=ExitGearTeeth, width=IntermidiateGearThickness, bore=AxisDiameter, pressure_angle=20, helix_angle=-20*Direction, optimized=false);
+        herringbone_gear(modul=Modulus, tooth_number=ExitGearTeeth/Modulus, width=IntermidiateGearThickness, bore=AxisDiameter, pressure_angle=20, helix_angle=-20*Direction, optimized=false);
     difference(){
         cylinder(d=ExitGearTeeth+2, h = Elev);
         translate([0,0,-.5])
@@ -160,6 +161,22 @@ module FourthGear(){
     //Esta é uma engrenagem de entrada
     herringbone_gear(modul=MotorGearModulus, tooth_number=FourthGearTeeth, width=MotorGearThickness, bore=Axis, pressure_angle=20, helix_angle=20*Outwards, optimized=false);
     ExitGear(Direction=Outwards, Elevation = MotorGearThickness + IntermidiateGearThickness + 2 * InterGearGap);
+}
+
+module ThirdGear(){
+    Axis = IntermidiateGearAxis;
+    //Ângulo de hélice para saida é -20 e entrada 20
+    //Esta é uma engranagem de entrada
+    herringbone_gear(modul=1, tooth_number=ThirdGearTeeth, width=IntermidiateGearThickness, bore=Axis, pressure_angle=20, helix_angle=20*Inwards, optimized=true);
+    ExitGear(AxisDiameter = Axis, Direction = Inwards);
+}
+
+module SecondGear(){
+    Axis = IntermidiateGearAxis;
+    //Ângulo de hélice para saida é -20 e entrada 20
+    //Esta é uma engranagem de entrada
+    herringbone_gear(modul=1, tooth_number=SecondGearTeeth, width=IntermidiateGearThickness, bore=Axis, pressure_angle=20, helix_angle=20*Outwards, optimized=true);
+    ExitGear(AxisDiameter = Axis, Direction = Outwards, Modulus = FirstGearModulus);
 }
 
 module Spool(FenseOnly=false){
@@ -232,8 +249,7 @@ module Spool(FenseOnly=false){
     }
 }
 
-
-
+//Peça principal que suporta o carretel e a engrenagem primária
 module SpoolGear(){
     translate([0,0,HubHeigth/2]){   
         difference(){
@@ -241,8 +257,10 @@ module SpoolGear(){
                 //Corpo da peça
                 difference(){
                     union(){
-                        translate([0,0,PartsMinThickness + IntermidiateGearThickness / 2])
-                            cylinder(d=SpoolInternalDiameter - 2 * Gap, h = SpoolWidth, center=true);
+                        translate([0,0,(SpoolWidth + 2 * PartsMinThickness + IntermidiateGearThickness)/2-PartsMinThickness])
+                            cylinder(d1=SpoolInternalDiameter - 2 * Gap, d2=SpoolInternalDiameter - PartsMinThickness, h=PartsMinThickness);
+                        translate([0,0,(PartsMinThickness + IntermidiateGearThickness / 2)-PartsMinThickness/2])
+                            cylinder(d=SpoolInternalDiameter - 2 * Gap, h = SpoolWidth-PartsMinThickness, center=true);
                         translate([0,0,-SpoolWidth/2])
                             cylinder(d=SpoolInternalDiameter + 3 * PartsMinThickness, h= 2 * PartsMinThickness + IntermidiateGearThickness, center=true);
                     }        
@@ -250,8 +268,18 @@ module SpoolGear(){
                 }
                 //Aletas de fixação
                 for (i = [0:3]){
-                    rotate([0,0,i*45])
-                        cube([SpoolInternalDiameter + 2 * (PartsMinThickness - Gap), PartsMinThickness - Gap, HubHeigth], center=true);
+                    rotate([0,0,i*45]){
+                        translate([0,0,-PartsMinThickness/2])
+                            cube([SpoolInternalDiameter + 2 * (PartsMinThickness - Gap), PartsMinThickness - Gap, HubHeigth-PartsMinThickness], center=true);
+                        cube([SpoolInternalDiameter - PartsMinThickness - Gap, PartsMinThickness - Gap, HubHeigth], center=true);
+                        for (i=[0,1]){
+                            rotate([0,0,i*180])
+                                translate([(SpoolInternalDiameter-PartsMinThickness-Gap)/2,0,(SpoolWidth + 2 * PartsMinThickness + IntermidiateGearThickness)/2-PartsMinThickness])
+                                    scale([(3*PartsMinThickness-Gap)/(PartsMinThickness-Gap),1,1])
+                                        rotate([0,0,45]) 
+                                            cylinder(d1=sqrt(2) * (PartsMinThickness-Gap), d2=0, h=PartsMinThickness, $fn=4);
+                        }
+                    }
                 }
                 //Eixo central
                 cylinder(d=Bearing608ExternalDiamenter + 2 * PartsMinThickness, h = HubHeigth, center=true);
@@ -269,7 +297,7 @@ module SpoolGear(){
         //Ângulo de hélice para saida é -20 e entrada 20
         //Esta é uma engranagem de entrada
         translate([0,0,-HubHeigth/2])
-        herringbone_gear(modul=1, tooth_number=FirstGearTeeth, width=IntermidiateGearThickness, bore=SpoolInternalDiameter + 2 * PartsMinThickness, pressure_angle=20, helix_angle=20, optimized=false);
+        herringbone_gear(modul=FirstGearModulus, tooth_number=FirstGearTeeth/FirstGearModulus, width=IntermidiateGearThickness, bore=SpoolInternalDiameter + 2 * PartsMinThickness, pressure_angle=20, helix_angle=20, optimized=false);
     }
 }
 
@@ -281,24 +309,6 @@ module SpoolGearAxis(){
         cylinder(d = M8SwcreewDiameter + 2 * Gap, h=AxisHeigth + 1, center=true);
     }
 }
-
-module SecondGear(){
-    Axis = IntermidiateGearAxis;
-    //Ângulo de hélice para saida é -20 e entrada 20
-    //Esta é uma engranagem de entrada
-    herringbone_gear(modul=1, tooth_number=SecondGearTeeth, width=IntermidiateGearThickness, bore=Axis, pressure_angle=20, helix_angle=20*Outwards, optimized=true);
-    ExitGear(AxisDiameter = Axis, Direction = Outwards);
-
-}
-
-module ThirdGear(){
-    Axis = IntermidiateGearAxis;
-    //Ângulo de hélice para saida é -20 e entrada 20
-    //Esta é uma engranagem de entrada
-    herringbone_gear(modul=1, tooth_number=ThirdGearTeeth, width=IntermidiateGearThickness, bore=Axis, pressure_angle=20, helix_angle=20*Inwards, optimized=true);
-    ExitGear(AxisDiameter = Axis, Direction = Inwards);
-}
-
 
 module M8Swcreew(){
     
@@ -342,15 +352,32 @@ module Assembly(){
         
 }
 
+module Spacer(dIn = 10, dOut = 4, h = 1){
+    difference(){
+        cylinder(d = dOut, h = h, center = true);
+        cylinder(d = dIn, h = h + 1, center = true);
+    }
+}
+
 //rotate([90,0,0]) Assembly();
-//SpoolGear();
+SpoolGear();
 //SecondGear();
 //ThirdGear();
-FourthGear();
+//FourthGear();
 //ExitGear();
 
+//Espaçador para a engrenagem primária
+//Spacer(dIn=M8SwcreewDiameter+4*Gap, dOut = Bearing608MeanDiamenter - 2*Gap, h=IntermidiateGearThickness+3*InterGearGap + MotorGearThickness);
 
+//Espaçador para a segunda e terceira engrenagens
+//Spacer(dIn=IntermidiateGearAxis+2*Gap, dOut = ExitGearTeeth - 2*Gap, h=MotorGearThickness+2*InterGearGap);
 
+//Espaçador frontal
+//Spacer(dIn=IntermidiateGearAxis+2*Gap, dOut = ExitGearTeeth - 2*Gap, h=InterGearGap);
+
+//Espaçador dos parafusos
+
+//Spacer(dIn=3.5, dOut=10, h=MotorGearThickness+2*IntermidiateGearThickness+4*InterGearGap);
 
 //translate([0,0,Bearing608Width])
 //SpoolGearAxis();

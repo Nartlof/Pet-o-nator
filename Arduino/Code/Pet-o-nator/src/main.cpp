@@ -1,8 +1,18 @@
 #include <Arduino.h>
-#include <LiquidCrystal.h>
+//#include <LiquidCrystal.h>
 #include <PID_v1.h>
 #define USE_TIMER_1 true
 #include <TimerInterrupt.h>
+
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+#define COLUMS 20
+#define ROWS 4
+
+#define LCD_SPACE_SYMBOL 0x20 // space symbol from the LCD ROM, see p.9 of GDM2004D datasheet
+
+LiquidCrystal_I2C lcd(PCF8574_ADDR_A21_A11_A01, 4, 5, 6, 16, 11, 12, 13, 14, POSITIVE);
 
 // NTC and PWM definitions
 #define NtcPin A0
@@ -12,7 +22,7 @@
 #define PwmPin 6
 
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
-LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+// LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 // PwmValue is an absolute value from 0 to 1024. Larger values mean 100% dutty cicle
 
@@ -60,6 +70,10 @@ double ReadNtc()
 {
   static double SenseResistor = SenseResistor1;
   double NtcReading = analogRead(NtcPin);
+  if (NtcReading == 0)
+  {
+    NtcReading = 1;
+  }
   double NtcResistance = SenseResistor * (1024.0 - NtcReading) / NtcReading;
   if (NtcResistance < SenseResistor1 / 10)
   {
@@ -79,10 +93,11 @@ double ReadNtc()
 
 void setup()
 {
-  // set up the LCD's number of columns and rows:
-  lcd.begin(16, 2);
+  //  set up the LCD's number of columns and rows:
+  lcd.begin(20, 4);
   lcd.clear();
-  lcd.print("Initializing...");
+  lcd.setCursor(0, 0);
+  lcd.print(F("Initializing..."));
   // initialize the serial communications:
   // Serial.begin(9600);
   // Serial.write("Conectado\n");
@@ -107,7 +122,7 @@ void setup()
 void loop()
 {
   static long LoopCount = millis();
-  TargetTemp = float(analogRead(A1) / 4 + 273+20) / 16.0 + TargetTemp * 15.0 / 16.0;
+  TargetTemp = float(analogRead(A1) / 4 + 273 + 20) / 16.0 + TargetTemp * 15.0 / 16.0;
 
   // Loading ADC for the NTC
   // avarege = analogRead(NtcPin); // (analogRead(NtcPin) + 15 * avarege) / 16;
@@ -119,14 +134,15 @@ void loop()
   if (millis() - LoopCount > 500)
   {
     lcd.clear();
+    // lcd.setCursor(0, 0);
     lcd.print(NtcResistance);
     lcd.print("R");
-    lcd.setCursor(11, 0);
+    lcd.setCursor(15, 0);
     lcd.print(PwmValue);
     lcd.setCursor(0, 1);
     lcd.print(TargetTemp - 273);
     lcd.print("C");
-    lcd.setCursor(8, 1);
+    lcd.setCursor(13, 1);
     lcd.print(ReadTemp - 273);
     lcd.print("C");
     LoopCount = millis();

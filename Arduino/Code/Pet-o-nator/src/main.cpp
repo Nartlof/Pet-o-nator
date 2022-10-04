@@ -137,7 +137,7 @@ void loop()
     // lcd.setCursor(0, 0);
     lcd.print(NtcResistance);
     lcd.print("R");
-    lcd.setCursor(15, 0);
+    lcd.setCursor(13, 0);
     lcd.print(PwmValue);
     lcd.setCursor(0, 1);
     lcd.print(TargetTemp - 273);

@@ -19,7 +19,10 @@ LiquidCrystal_I2C lcd(PCF8574_ADDR_A21_A11_A01, 4, 5, 6, 16, 11, 12, 13, 14, POS
 #define SenseResistor1 9800.0
 #define SenseResistor2 555.0
 #define ResistorSelectingPin 7
-#define PwmPin 6
+#define HeaterPwmPin 6
+
+// Motor PWM definitions
+#define MotorPwmPin A2
 
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 // LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
@@ -39,7 +42,7 @@ PID myPID(&ReadTemp, &PwmValue, &TargetTemp, Kp, Ki, Kd, DIRECT);
 void BitBangingPWM()
 {
   static int Time = 0;
-  digitalWrite(PwmPin, (Time < PwmValue));
+  digitalWrite(HeaterPwmPin, (Time < PwmValue));
   Time++;
   if (Time > 1023)
   {
@@ -103,7 +106,7 @@ void setup()
   // Serial.write("Conectado\n");
 
   // Setting up pins
-  pinMode(PwmPin, OUTPUT);
+  pinMode(HeaterPwmPin, OUTPUT);
   // Put the resistor selection in high impedance
   pinMode(ResistorSelectingPin, INPUT);
 

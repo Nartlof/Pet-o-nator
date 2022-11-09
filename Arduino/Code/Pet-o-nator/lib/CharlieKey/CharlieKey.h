@@ -15,10 +15,10 @@ public:
     ~CharlieKey();
     void addPin(uint8_t Pin); // Used to set the vector with pins
     uint8_t read();           // Reads the keyboard
+    uint8_t nPins();          // Returns the number of pins set
 
 private:
     uint8_t *Pins;
-    uint8_t nPins;
     uint8_t pinsSet;
 };
 

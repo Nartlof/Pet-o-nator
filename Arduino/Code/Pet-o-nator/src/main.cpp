@@ -10,10 +10,21 @@ void setup()
     KeyBoard.addPin(12);
     KeyBoard.addPin(13);
     Serial.println(F("Lendo o teclado"));
-    Serial.println(KeyBoard.read());
 }
 
 void loop()
 {
-    ;
+    static uint8_t newKey = 0;
+    static uint8_t lastKey = 0;
+    newKey = KeyBoard.read();
+    if (newKey != lastKey)
+    {
+        if (newKey != 0)
+        {
+            //Serial.print(newKey, BIN);
+            //Serial.print(" ");
+            Serial.println(newKey);
+        }
+        lastKey = newKey;
+    }
 }

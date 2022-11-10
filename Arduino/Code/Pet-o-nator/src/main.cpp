@@ -3,12 +3,14 @@
 
 void setup()
 {
+    uint8_t KeyPins[keboardBits] = {keboardA0, keboardA1, keboardA2};
     Serial.begin(9600);
     Serial.println(F("Iniciando..."));
     Serial.println(F("Setando o teclado"));
-    KeyBoard.addPin(11);
-    KeyBoard.addPin(12);
-    KeyBoard.addPin(13);
+    for (uint8_t i = 0; i < keboardBits; i++)
+    {
+        KeyBoard.addPin(KeyPins[i]);
+    }
     Serial.println(F("Lendo o teclado"));
 }
 
@@ -21,8 +23,8 @@ void loop()
     {
         if (newKey != 0)
         {
-            //Serial.print(newKey, BIN);
-            //Serial.print(" ");
+            // Serial.print(newKey, BIN);
+            // Serial.print(" ");
             Serial.println(newKey);
         }
         lastKey = newKey;

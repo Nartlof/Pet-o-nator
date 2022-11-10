@@ -14,7 +14,12 @@ CharlieKey::~CharlieKey()
 
 void CharlieKey::addPin(uint8_t Pin)
 {
+    // Save the pin in the array
     Pins[pinsSet] = Pin;
+    // Set the pin as input with a pullup
+    pinMode(Pin, INPUT);
+    digitalWrite(Pin, HIGH);
+    // Increment the number of pins set
     pinsSet++;
 }
 
@@ -26,16 +31,10 @@ uint8_t CharlieKey::nPins()
 uint8_t CharlieKey::read()
 {
     uint8_t key = 0;
-    // To ensure a proper reading, at least 2 consecutive readings must match
     uint8_t lastKey = 255;
 
-    // setup ports..
-    for (uint8_t i = 0; i < pinsSet; i++)
-    {
-        // Reset all pins as inputs
-        pinMode(Pins[i], INPUT);
-        digitalWrite(Pins[i], HIGH);
-    }
+    // To ensure a proper reading, at least 2
+    // consecutive readings must match
     // Reading the lines
     while (lastKey != key)
     {
@@ -49,7 +48,6 @@ uint8_t CharlieKey::read()
             // set the reading line as output '0'
             pinMode(Pins[line], OUTPUT);
             digitalWrite(Pins[line], LOW);
-            // delay(1);
             //  read ports..
             for (uint8_t j = 0; j < pinsSet; j++)
             {
@@ -100,7 +98,7 @@ uint8_t CharlieKey::read()
             }
         }
         // Add a delay for debouncing
-        delay(10);
+        delay(6);
     }
     return key;
 }

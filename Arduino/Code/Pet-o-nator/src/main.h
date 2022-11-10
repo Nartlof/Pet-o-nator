@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <config.h>
 #include <CharlieKey.h>
 
-CharlieKey KeyBoard(3);
+CharlieKey KeyBoard(keboardBits);

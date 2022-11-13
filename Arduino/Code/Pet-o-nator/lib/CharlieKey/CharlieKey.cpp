@@ -1,10 +1,14 @@
 #include <Arduino.h>
 #include <CharlieKey.h>
 
-CharlieKey::CharlieKey(uint8_t setPins)
+CharlieKey::CharlieKey(uint8_t setPins = 3, uint16_t debounceTime)
 {
+    _debouceTime = debounceTime;
     Pins = new uint8_t[setPins];
     pinsSet = 0;
+    key = 0;
+    lastKey = 0;
+    nextRead = millis();
 };
 
 CharlieKey::~CharlieKey()
@@ -30,75 +34,105 @@ uint8_t CharlieKey::nPins()
 
 uint8_t CharlieKey::read()
 {
-    uint8_t key = 0;
-    uint8_t lastKey = 255;
-
-    // To ensure a proper reading, at least 2
-    // consecutive readings must match
-    // Reading the lines
-    while (lastKey != key)
+    if (nextRead <= millis())
     {
-        lastKey = key;
-        uint8_t rawkey = 0;
-        uint8_t parity = 0;
-        uint8_t auxColumn = 0;
-        uint8_t column = 0;
-        for (uint8_t line = 0; line < pinsSet; line++)
+        // It is time for a new reading
+        uint8_t newKey = rawRead();
+        if (lastKey == newKey)
         {
-            // set the reading line as output '0'
-            pinMode(Pins[line], OUTPUT);
-            digitalWrite(Pins[line], LOW);
-            //  read ports..
-            for (uint8_t j = 0; j < pinsSet; j++)
-            {
-                if (line != j)
-                {
-                    if (LOW == digitalRead(Pins[j]))
-                    {
-                        bitSet(rawkey, j);
-                        parity++;
-                    }
-                }
-            }
-            // Reset the pin as input again
-            pinMode(Pins[line], INPUT);
-            digitalWrite(Pins[line], HIGH);
-            if (rawkey != 0x0)
-            { // key pressed, return key
-                // Odd parity means the dyagonal bit is off
-                if (parity == 1)
-                {
-                    bitSet(rawkey, line);
-                }
-                // Determining the column
-                auxColumn = 1;
-                bitSet(auxColumn, pinsSet - 1);
-                if (auxColumn == rawkey)
-                {
-                    column = pinsSet;
-                }
-                else
-                {
-                    auxColumn = 0b00000011; // Set the value to b00000011
-                    for (uint8_t j = 1; j < pinsSet; j++)
-                    {
-                        if (auxColumn == rawkey)
-                        {
-                            column = j;
-                            break;
-                        }
-                        auxColumn = auxColumn << 1;
-                    }
-                }
-                if (column != 0)
-                {
-                    key = column + line * pinsSet;
-                }
-                break;
-            }
+            // two consecutive readings resulted in the same key
+            // so, that is the key to be returned
+            key = newKey;
         }
-        // Add a delay for debouncing
-        delay(6);
+        else
+        {
+            // there is an inconsistance in reading,
+            // so no valid key is pressed
+            key = 0;
+        }
+        // Updating the read to compare with next iteration
+        lastKey = newKey;
+        // Set the time for the next reading
+        nextRead = millis() + _debouceTime;
     }
     return key;
+}
+
+uint8_t CharlieKey::rawRead()
+{
+    uint8_t readKey = 0;
+    uint8_t rawkey = 0;
+    uint8_t parity = 0;
+    uint8_t auxColumn = 0;
+    uint8_t column = 0;
+    for (uint8_t line = 0; line < pinsSet; line++)
+    {
+        // set the reading line as output '0'
+        pinMode(Pins[line], OUTPUT);
+        digitalWrite(Pins[line], LOW);
+        //  read ports..
+        for (uint8_t j = 0; j < pinsSet; j++)
+        {
+            if (line != j)
+            {
+                if (LOW == digitalRead(Pins[j]))
+                {
+                    bitSet(rawkey, j);
+                    // counting how many bits where read
+                    parity++;
+                }
+            }
+        }
+        // Reset the pin as input again
+        pinMode(Pins[line], INPUT);
+        digitalWrite(Pins[line], HIGH);
+        if (rawkey != 0x0)
+        {
+            // Some key were pressed. Let's determine witch one
+            // Odd parity means the dyagonal bit is off.
+            if (parity == 1)
+            {
+                // Setting the dyagonal bit on
+                bitSet(rawkey, line);
+            }
+            // Determining the column
+            // The last column has the first and last bits on
+            // The others have two consecutive bits on
+            // So, let's check the last column firt
+            auxColumn = 1;
+            bitSet(auxColumn, pinsSet - 1);
+            if (auxColumn == rawkey)
+            {
+                // It is the last column
+                column = pinsSet;
+            }
+            else
+            {
+                // It is not the last column.
+                // Set the value to b00000011 for the first column
+                auxColumn = 0b00000011;
+                for (uint8_t j = 1; j < pinsSet; j++)
+                {
+                    if (auxColumn == rawkey)
+                    {
+                        // Found the column. No need to check further
+                        column = j;
+                        break;
+                    }
+                    // Rotate the bits for the next column
+                    auxColumn = auxColumn << 1;
+                }
+            }
+            // If column is zero, a invalid stream of bits was read
+            // and no match was found and this reading should be ignored.
+            if (column != 0)
+            {
+                // Calculating the index of the key pressed
+                readKey = column + line * pinsSet;
+            }
+            // No need to check further. A key was found or a reading error occurred
+            break;
+        }
+    }
+    return readKey;
 }

@@ -3,18 +3,23 @@
 
 void setup()
 {
-    uint8_t KeyPins[keboardBits] = {keboardA0, keboardA1, keboardA2};
+    uint8_t keyPins[keboardBits] = {keboardA0, keboardA1, keboardA2};
     Serial.begin(9600);
     Serial.println(F("Iniciando..."));
     Serial.println(F("Setando o teclado"));
     for (uint8_t i = 0; i < keboardBits; i++)
     {
-        KeyBoard.addPin(KeyPins[i]);
+        keyboard.addPin(keyPins[i]);
     }
     Serial.println(F("Lendo o teclado"));
 }
 
 void loop()
+{
+    treatKeybord();
+}
+
+void treatKeybord()
 {
     const unsigned long startRepeatDelay = 1024;
     static uint8_t newKey = 0;
@@ -23,7 +28,7 @@ void loop()
     static unsigned long nextRepeat = startRepeatDelay;
     static unsigned long repeatTime = startRepeatDelay;
     unsigned long now = 0;
-    newKey = KeyBoard.read();
+    newKey = keyboard.read();
     //***********************
     // Treating the keyboard
     //***********************
@@ -36,17 +41,23 @@ void loop()
         repeatTime = nextRepeat;
         if (newKey != 0)
         {
-            Serial.print(newKey);
+            // Serial.print(newKey);
+            // The change was a new key pressed
+            treatKeyPressed(newKey, false);
         }
         else
         {
-            Serial.println();
+            // Serial.println();
+            //  The change was the release of a key
+            //  It is coded to the treatment routine as a zero-false paramenter
+            treatKeyPressed(0, false);
         }
     }
     else
     {
         // It is a repeat
         // Only do something if a key is pressed
+        // The release of the key was treated above
         if (newKey != 0)
         {
             // Check if it is time to repeat
@@ -55,19 +66,21 @@ void loop()
             {
                 // do the repetition
                 Serial.print(newKey);
-                // Check how many repeats for increiasing speed
+                // Check how much time passes before increiasing speed
                 if (now > repeatTime)
                 {
                     // It is time to update the repeating delay
                     repeatDelay /= 4;
                     repeatTime = now + startRepeatDelay;
                 }
-                nextRepeat = millis() + repeatDelay;
+                nextRepeat = now + repeatDelay;
             }
         }
     }
+    // Update lastKey for the next treatment
     lastKey = newKey;
-    //***************************
-    // End treating the keyboard
-    //***************************
+}
+
+void treatKeyPressed(uint8_t key, bool repeat)
+{
 }

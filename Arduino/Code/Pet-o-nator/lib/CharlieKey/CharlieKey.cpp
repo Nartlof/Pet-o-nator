@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <CharlieKey.h>
 
-CharlieKey::CharlieKey(uint8_t setPins = 3, uint16_t debounceTime)
+CharlieKey::CharlieKey(uint8_t setPins, uint16_t debounceTime)
 {
     _debouceTime = debounceTime;
     Pins = new uint8_t[setPins];

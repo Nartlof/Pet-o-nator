@@ -3,12 +3,15 @@
 #include <CharlieKey.h>
 #include <Display.h>
 #include <HotEnd.h>
+#include <Motor.h>
 
 CharlieKey keyboard(keboardBits);
 
-Display display();
+Display display;
 
-HotEnd hotEnd();
+// HotEnd hotEnd(HotEndPwmPin, HotEndFeedBack1, HotEndFeedBack2);
+
+// Motor motor(MotorPwmPin, MotorFeedbackPin);
 
 void treatKeybord(void);
 void treatKeyPressed(uint8_t key, bool repeat);

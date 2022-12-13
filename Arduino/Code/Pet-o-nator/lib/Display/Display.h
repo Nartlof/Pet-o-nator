@@ -5,34 +5,36 @@ Autor: Carlos Eduardo Foltran
 Date: 2022-12-09
 */
 
+#pragma once
+
 #ifndef PetonatorDISPLAY
 #define PetonatorDISPLAY
 
 #include <Arduino.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
+#define LCD_SPACE_SYMBOL 0x20 // space symbol from the LCD ROM, see p.9 of GDM2004D datasheet
 
 class Display
 {
 private:
     /* data */
-    LiquidCrystal_I2C *lcdDisplay;
-    double newTargetVelocity;
-    double oldTargetVelocity;
-    double newTargetTemperature;
-    double oldTargetTemperature;
-    double newMeasuredVelocity;
-    double oldMeasuredVelocity;
-    double newMeasuredTemperature;
-    double oldMeasuredTemperature;
+    double targetVelocity;
+    double targetTemperature;
+    double measuredVelocity;
+    double measuredTemperature;
+    bool anyChange;
+    LiquidCrystal_I2C lLcd;
 
 public:
     Display();
     ~Display();
+    void initialize();
     void setTargetVelocity(double velocity);
     void setTargetTemperature(double temperature);
     void setMeasuredVelocity(double velocity);
     void setMeasuredTemperature(double temperature);
+    void update(); // must be on the main loop
 };
 
 #endif

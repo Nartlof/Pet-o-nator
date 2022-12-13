@@ -1,4 +1,4 @@
-//#include <Arduino.h>
+// #include <Arduino.h>
 #include <main.h>
 
 void setup()
@@ -11,12 +11,15 @@ void setup()
     {
         keyboard.addPin(keyPins[i]);
     }
+    display.initialize();
+    //gLcd.clear();
     Serial.println(F("Lendo o teclado"));
 }
 
 void loop()
 {
     treatKeybord();
+    //display.update();
 }
 
 void treatKeybord()
@@ -41,13 +44,13 @@ void treatKeybord()
         repeatTime = nextRepeat;
         if (newKey != 0)
         {
-            // Serial.print(newKey);
+            Serial.print(newKey);
             // The change was a new key pressed
             treatKeyPressed(newKey, false);
         }
         else
         {
-            // Serial.println();
+            Serial.println();
             //  The change was the release of a key
             //  It is coded to the treatment routine as a zero-false paramenter
             treatKeyPressed(0, false);

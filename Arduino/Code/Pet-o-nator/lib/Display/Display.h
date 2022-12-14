@@ -19,20 +19,21 @@ class Display
 {
 private:
     /* data */
-    double targetVelocity;
-    double targetTemperature;
-    double measuredVelocity;
-    double measuredTemperature;
+    uint16_t targetSpeed;
+    uint16_t targetTemperature;
+    uint16_t measuredSpeed;
+    uint16_t measuredTemperature;
     bool anyChange;
     LiquidCrystal_I2C lLcd;
+    void ajustValue(uint16_t *, double); // rounds and ajusts the value for the sets
 
 public:
     Display();
     ~Display();
     void initialize();
-    void setTargetVelocity(double velocity);
+    void setTargetSpeed(double speed);
     void setTargetTemperature(double temperature);
-    void setMeasuredVelocity(double velocity);
+    void setMeasuredSpeed(double speed);
     void setMeasuredTemperature(double temperature);
     void update(); // must be on the main loop
 };

@@ -40,6 +40,22 @@ double HotEnd::readTemperature()
     return measuredTemperature;
 }
 
+void HotEnd::incTemp()
+{
+    if (targetTemperature < MaxTemperature)
+    {
+        targetTemperature++;
+    }
+}
+
+void HotEnd::decTemp()
+{
+    if (targetTemperature > 0)
+    {
+        targetTemperature--;
+    }
+}
+
 void HotEnd::update()
 {
     // put PWM here

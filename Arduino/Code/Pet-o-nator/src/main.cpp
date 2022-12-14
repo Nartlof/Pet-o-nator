@@ -1,25 +1,23 @@
-// #include <Arduino.h>
 #include <main.h>
 
 void setup()
 {
     uint8_t keyPins[keboardBits] = {keboardA0, keboardA1, keboardA2};
-    Serial.begin(9600);
-    Serial.println(F("Iniciando..."));
-    Serial.println(F("Setando o teclado"));
+    // Serial.begin(9600);
+    // Serial.println(F("Iniciando..."));
+    // Serial.println(F("Setando o teclado"));
     for (uint8_t i = 0; i < keboardBits; i++)
     {
         keyboard.addPin(keyPins[i]);
     }
     display.initialize();
-    //gLcd.clear();
-    Serial.println(F("Lendo o teclado"));
+    // Serial.println(F("Lendo o teclado"));
 }
 
 void loop()
 {
     treatKeybord();
-    //display.update();
+    display.update();
 }
 
 void treatKeybord()
@@ -44,13 +42,11 @@ void treatKeybord()
         repeatTime = nextRepeat;
         if (newKey != 0)
         {
-            Serial.print(newKey);
             // The change was a new key pressed
             treatKeyPressed(newKey, false);
         }
         else
         {
-            Serial.println();
             //  The change was the release of a key
             //  It is coded to the treatment routine as a zero-false paramenter
             treatKeyPressed(0, false);
@@ -68,7 +64,7 @@ void treatKeybord()
             if (now > nextRepeat)
             {
                 // do the repetition
-                Serial.print(newKey);
+                treatKeyPressed(newKey, true);
                 // Check how much time passes before increiasing speed
                 if (now > repeatTime)
                 {
@@ -86,4 +82,29 @@ void treatKeybord()
 
 void treatKeyPressed(uint8_t key, bool repeat)
 {
+    switch (key)
+    {
+    case tempUp:
+        hotEnd.incTemp();
+        display.setTargetTemperature(hotEnd.getTemperature());
+        break;
+
+    case tempDown:
+        hotEnd.decTemp();
+        display.setTargetTemperature(hotEnd.getTemperature());
+        break;
+
+    case speedUp:
+        motor.incSpeed();
+        display.setTargetSpeed(motor.getSpeed());
+        break;
+
+    case speedDown:
+        motor.decSpeed();
+        display.setTargetSpeed(motor.getSpeed());
+        break;
+
+    default:
+        break;
+    }
 }

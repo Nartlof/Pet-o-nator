@@ -27,6 +27,8 @@ public:
     void setTemperature(double Temperature); // sets the target temperature
     double getTemperature();                 // returns the target temperature
     double readTemperature();                // returns the temperature from NTC
+    void incTemp();                          // increments temperature by one degree
+    void decTemp();                          // decrements temperature by one degree
     void update();                           // Must be in the mais loop
     void start();                            // Starts the heating
     void stop();                             // Turns off the hearter

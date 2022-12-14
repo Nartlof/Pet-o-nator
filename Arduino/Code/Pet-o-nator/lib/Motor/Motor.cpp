@@ -16,7 +16,7 @@ Motor::~Motor()
 {
 }
 
-void Motor::setRPM(uint16_t RPM)
+void Motor::setRPM(double RPM)
 {
     if (RPM <= MaxRPM)
     {
@@ -28,14 +28,53 @@ void Motor::setRPM(uint16_t RPM)
     }
 }
 
-uint16_t Motor::getRPM()
+double Motor::getRPM()
 {
     return targetRPM;
 }
 
-uint16_t Motor::readRPM()
+double Motor::readRPM()
 {
     return measuredRPM;
+}
+
+void Motor::setSpeed(double speed)
+{
+    setRPM(speed * SpeedToRpm);
+}
+
+double Motor::getSpeed()
+{
+    return round(targetRPM / SpeedToRpm);
+}
+
+double Motor::readSpeed()
+{
+    return round(measuredRPM / SpeedToRpm);
+}
+
+void Motor::incSpeed()
+{
+    if (targetRPM < MaxRPM)
+    {
+        targetRPM += SpeedToRpm;
+        if (targetRPM > MaxRPM)
+        {
+            targetRPM = MaxRPM;
+        }
+    }
+}
+
+void Motor::decSpeed()
+{
+    if (targetRPM > 0)
+    {
+        targetRPM -= SpeedToRpm;
+        if (targetRPM < 0)
+        {
+            targetRPM = 0;
+        }
+    }
 }
 
 void Motor::update()

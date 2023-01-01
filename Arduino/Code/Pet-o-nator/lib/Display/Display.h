@@ -15,6 +15,10 @@ Date: 2022-12-09
 #include <LiquidCrystal_I2C.h>
 #define LCD_SPACE_SYMBOL 0x20 // space symbol from the LCD ROM, see p.9 of GDM2004D datasheet
 
+#ifndef DiplayRefreshTime
+#define DiplayRefreshTime 128 // The amount of time between two refreshes
+#endif
+
 class Display
 {
 private:
@@ -24,11 +28,13 @@ private:
     uint16_t measuredSpeed;
     uint16_t measuredTemperature;
     bool anyChange;
+    unsigned long nextRefresh;
+    unsigned long refreshTime;
     LiquidCrystal_I2C lLcd;
     void ajustValue(uint16_t *, double); // rounds and ajusts the value for the sets
 
 public:
-    Display();
+    Display(unsigned long diplaysRefreshTime);
     ~Display();
     void initialize();
     void setTargetSpeed(double speed);

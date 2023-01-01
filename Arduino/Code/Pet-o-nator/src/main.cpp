@@ -17,6 +17,7 @@ void setup()
 void loop()
 {
     treatKeybord();
+    hotEnd.update();
     display.update();
 }
 
@@ -102,6 +103,14 @@ void treatKeyPressed(uint8_t key, bool repeat)
     case speedDown:
         motor.decSpeed();
         display.setTargetSpeed(motor.getSpeed());
+        break;
+    case startButton:
+        motor.start();
+        hotEnd.start();
+        break;
+    case stopButton:
+        motor.stop();
+        hotEnd.stop();
         break;
 
     default:

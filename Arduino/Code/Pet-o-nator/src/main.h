@@ -7,9 +7,10 @@
 
 CharlieKey keyboard(keboardBits);
 
-Display display;
+Display display(DisplayRefreshTime);
 
-HotEnd hotEnd(HotEndPwmPin, HotEndFeedBack1, HotEndFeedBack2);
+HotEnd hotEnd(HotEndPwmPin, HotEndNtcRead, HotEndRSelection,
+              HotEndKp, HotEndKi, HotEndKd, HotEndSenseResistor1, HotEndSenseResistor2);
 
 Motor motor(MotorPwmPin, MotorFeedbackPin);
 

@@ -7,13 +7,15 @@
     Class constructor
 */
 /**************************************************************************/
-Display::Display()
+Display::Display(unsigned long diplaysRefreshTime)
 {
     anyChange = true;
     targetSpeed = 0;
     targetTemperature = 0;
     measuredSpeed = 0;
     measuredTemperature = 0;
+    refreshTime = diplaysRefreshTime;
+    nextRefresh = millis();
     LiquidCrystal_I2C lLcd(PCF8574_ADDR_A21_A11_A01, 4, 5, 6, 16, 11, 12, 13, 14, POSITIVE);
 }
 
@@ -70,7 +72,7 @@ void Display::setMeasuredTemperature(double temperature)
 /**************************************************************************/
 void Display::update()
 {
-    if (anyChange)
+    if (anyChange && millis() > nextRefresh)
     {
         char buffer[21];
         lLcd.setCursor(0, 0);
@@ -82,5 +84,6 @@ void Display::update()
         lLcd.print(buffer);
         lLcd.print(F(" (mm/min)           "));
         anyChange = false;
+        nextRefresh = millis() + refreshTime;
     }
 }

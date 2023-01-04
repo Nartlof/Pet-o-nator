@@ -1,4 +1,3 @@
-#include <Arduino.h>
 #include <CharlieKey.h>
 
 CharlieKey::CharlieKey(uint8_t setPins, uint16_t debounceTime)

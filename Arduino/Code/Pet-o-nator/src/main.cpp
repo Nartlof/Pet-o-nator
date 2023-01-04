@@ -3,8 +3,8 @@
 void setup()
 {
     uint8_t keyPins[keboardBits] = {keboardA0, keboardA1, keboardA2};
-    // Serial.begin(9600);
-    // Serial.println(F("Iniciando..."));
+    Serial.begin(9600);
+    Serial.println(F("Iniciando..."));
     // Serial.println(F("Setando o teclado"));
     for (uint8_t i = 0; i < keboardBits; i++)
     {
@@ -18,6 +18,7 @@ void loop()
 {
     treatKeybord();
     hotEnd.update();
+    display.setMeasuredTemperature(hotEnd.readTemperature());
     display.update();
 }
 

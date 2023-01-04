@@ -8,6 +8,8 @@ Date: 2022-11-07
 #ifndef CHARLIEKEY
 #define CHARLIEKEY
 
+#include <Arduino.h>
+
 class CharlieKey
 {
 public:

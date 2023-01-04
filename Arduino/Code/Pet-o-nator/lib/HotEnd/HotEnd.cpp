@@ -9,19 +9,19 @@ HotEnd::HotEnd(uint8_t control, uint8_t ntcReadPin, uint8_t rSelection,
     hotEndRSelection = rSelection;
     senseResistor1 = R1;
     senseResistor2 = R2;
-    targetTemperature = 0;
-    measuredTemperature = 0;
+    targetTemperature = 273.15;
+    measuredTemperature = 273.15;
     pwmValue = 0;
     pinMode(hotEndPWM, OUTPUT);
     stop();
     pinMode(hotEndNtcRead, INPUT);
     pinMode(hotEndRSelection, INPUT);
-    //&ReadTemp, &PwmValue, &TargetTemp
-    PID HotEndPID(&measuredTemperature, &pwmValue, &targetTemperature, Kp, Ki, Kd, P_ON_E, DIRECT);
-    // This settings are default for the PID, but let's declare anyway.
-    HotEndPID.SetOutputLimits(0, 255);
-    HotEndPID.SetSampleTime(100);
-    HotEndPID.SetMode(AUTOMATIC);
+    hotEndPID.SetPointers(&measuredTemperature, &pwmValue, &targetTemperature);
+    hotEndPID.SetTunings(Kp, Ki, Kd, P_ON_E);
+    hotEndPID.SetControllerDirection(DIRECT);
+    hotEndPID.SetOutputLimits(0, 255);
+    hotEndPID.SetSampleTime(100);
+    hotEndPID.SetMode(AUTOMATIC);
 }
 
 HotEnd::~HotEnd()
@@ -42,12 +42,12 @@ void HotEnd::setTemperature(double Temperature)
 
 double HotEnd::getTemperature()
 {
-    return targetTemperature;
+    return targetTemperature - 273.15;
 }
 
 double HotEnd::readTemperature()
 {
-    return measuredTemperature;
+    return measuredTemperature - 275.15;
 }
 
 void HotEnd::incTemp()
@@ -60,7 +60,7 @@ void HotEnd::incTemp()
 
 void HotEnd::decTemp()
 {
-    if (targetTemperature > 0)
+    if (targetTemperature > 273.15)
     {
         targetTemperature--;
     }
@@ -68,13 +68,12 @@ void HotEnd::decTemp()
 
 void HotEnd::update()
 {
-    if (!started)
-    {
-        return;
-    }
     measuredTemperature = temperature(readNtc());
-    HotEndPID.Compute();
-    analogWrite(pwmValue, hotEndPWM);
+    if (started)
+    {
+        hotEndPID.Compute();
+        analogWrite(hotEndPWM, pwmValue);
+    }
 }
 
 void HotEnd::start()

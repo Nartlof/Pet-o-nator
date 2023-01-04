@@ -10,9 +10,9 @@ Date: 2022-12-09
 #define PetonatorHOTEND
 
 #include <PID_v1.h>
-#define MaxTemperature 300
+#define MaxTemperature 573.15
 
-class HotEnd
+class HotEnd : private PID
 {
 private:
     uint8_t hotEndPWM;
@@ -24,8 +24,8 @@ private:
     double measuredTemperature;
     double pwmValue;
     bool started;
-    PID HotEndPID;
-    // These are the figures to be used to calculate the temperature from the NTC reading
+    PID hotEndPID;
+    //  These are the figures to be used to calculate the temperature from the NTC reading
     const double ResistToTemp[4] = {7.06114140e-04, 2.69749565e-04, -6.99387329e-06, 3.01741645e-07};
 
 public:

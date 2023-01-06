@@ -8,7 +8,7 @@
  *
  * 1-Included default constructor
  *
- **********************************************************************************************/
+ ***********************************************************************************************/
 
 #if ARDUINO >= 100
 #include "Arduino.h"
@@ -19,9 +19,8 @@
 #include <PID_v1.h>
 
 /*Default Constructor*******************************************************/
-PID::PID() : PID::PID(NULL, NULL, NULL, 0.0, 0.0, 0.0, P_ON_E, DIRECT)
-{
-}
+PID::PID()
+    : PID::PID(NULL, NULL, NULL, 0.0, 0.0, 0.0, P_ON_E, DIRECT){};
 
 /*Constructor (...)*********************************************************
  *    The parameters specified here are those for for which we can't set up
@@ -30,10 +29,9 @@ PID::PID() : PID::PID(NULL, NULL, NULL, 0.0, 0.0, 0.0, P_ON_E, DIRECT)
 PID::PID(double *Input, double *Output, double *Setpoint,
          double Kp, double Ki, double Kd, int POn, int ControllerDirection)
 {
-   SetPointers(Input, Output, Setpoint);
-   // myOutput = Output;
-   // myInput = Input;
-   // mySetpoint = Setpoint;
+   myOutput = Output;
+   myInput = Input;
+   mySetpoint = Setpoint;
    inAuto = false;
 
    PID::SetOutputLimits(0, 255); // default output limit corresponds to
@@ -148,16 +146,6 @@ void PID::SetTunings(double Kp, double Ki, double Kd, int POn)
 void PID::SetTunings(double Kp, double Ki, double Kd)
 {
    SetTunings(Kp, Ki, Kd, pOn);
-}
-
-/*SetPointers*****************************************************************
- * Set pointers to the control variables after a default initialization
- *****************************************************************************/
-void PID::SetPointers(double *Input, double *Output, double *Setpoint)
-{
-   myOutput = Output;
-   myInput = Input;
-   mySetpoint = Setpoint;
 }
 
 /* SetSampleTime(...) *********************************************************

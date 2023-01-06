@@ -16,9 +16,8 @@ HotEnd::HotEnd(uint8_t control, uint8_t ntcReadPin, uint8_t rSelection,
     stop();
     pinMode(hotEndNtcRead, INPUT);
     pinMode(hotEndRSelection, INPUT);
-    hotEndPID.SetPointers(&measuredTemperature, &pwmValue, &targetTemperature);
-    hotEndPID.SetTunings(Kp, Ki, Kd, P_ON_E);
-    hotEndPID.SetControllerDirection(DIRECT);
+    // PID lPID(&measuredTemperature, &pwmValue, &targetTemperature, Kp, Ki, Kd, P_ON_E, DIRECT);
+    hotEndPID = PID(&measuredTemperature, &pwmValue, &targetTemperature, Kp, Ki, Kd, P_ON_E, DIRECT);
     hotEndPID.SetOutputLimits(0, 255);
     hotEndPID.SetSampleTime(100);
     hotEndPID.SetMode(AUTOMATIC);
@@ -45,6 +44,11 @@ double HotEnd::getTemperature()
     return targetTemperature - 273.15;
 }
 
+/*readTemperature()******************************************
+ *                                                          *
+ * Returns the temperature in Celsius measured with the NTC *
+ *                                                          *
+ ************************************************************/
 double HotEnd::readTemperature()
 {
     return measuredTemperature - 275.15;

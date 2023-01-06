@@ -16,7 +16,7 @@ Display::Display(unsigned long diplaysRefreshTime)
     measuredTemperature = 0;
     refreshTime = diplaysRefreshTime;
     nextRefresh = millis();
-    LiquidCrystal_I2C lLcd(PCF8574_ADDR_A21_A11_A01, 4, 5, 6, 16, 11, 12, 13, 14, POSITIVE);
+    lLcd = LiquidCrystal_I2C(PCF8574_ADDR_A21_A11_A01, 4, 5, 6, 16, 11, 12, 13, 14, POSITIVE);
 }
 
 Display::~Display()

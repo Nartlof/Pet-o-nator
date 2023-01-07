@@ -27,7 +27,7 @@ HotEnd::~HotEnd()
 {
 }
 
-void HotEnd::setTemperature(double Temperature)
+void HotEnd::setTemperature(float Temperature)
 {
     if (Temperature <= MaxTemperature)
     {
@@ -39,7 +39,7 @@ void HotEnd::setTemperature(double Temperature)
     }
 }
 
-double HotEnd::getTemperature()
+float HotEnd::getTemperature()
 {
     return targetTemperature - zeroCinK;
 }
@@ -49,7 +49,7 @@ double HotEnd::getTemperature()
  * Returns the temperature in Celsius measured with the NTC *
  *                                                          *
  ************************************************************/
-double HotEnd::readTemperature()
+float HotEnd::readTemperature()
 {
     return measuredTemperature - zeroCinK;
 }
@@ -121,7 +121,7 @@ double HotEnd::readNtc()
 // The parameters on ResistToTemp[] are calculated using the python code
 // on this project for minimal squares. Steinhart-Hart equation is used
 // writen as a series powers in log(R)
-double HotEnd::temperature(double NtcResistence)
+float HotEnd::temperature(double NtcResistence)
 {
     double x = log(NtcResistence);
     double xx = 1;
@@ -131,5 +131,5 @@ double HotEnd::temperature(double NtcResistence)
         eq += xx * ResistToTemp[i];
         xx *= x;
     }
-    return double(1 / eq);
+    return float(1 / eq);
 }

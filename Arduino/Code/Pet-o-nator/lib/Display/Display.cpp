@@ -30,7 +30,7 @@ void Display::initialize()
     update();
 }
 
-void Display::ajustValue(uint16_t *setting, double passedValue)
+void Display::ajustValue(uint16_t *setting, float passedValue)
 {
     uint16_t val = uint16_t round(passedValue);
     if (*setting != val)
@@ -40,22 +40,22 @@ void Display::ajustValue(uint16_t *setting, double passedValue)
     }
 }
 
-void Display::setTargetSpeed(double speed)
+void Display::setTargetSpeed(float speed)
 {
     ajustValue(&targetSpeed, speed);
 }
 
-void Display::setTargetTemperature(double temperature)
+void Display::setTargetTemperature(float temperature)
 {
     ajustValue(&targetTemperature, temperature);
 }
 
-void Display::setMeasuredSpeed(double speed)
+void Display::setMeasuredSpeed(float speed)
 {
     ajustValue(&measuredSpeed, speed);
 }
 
-void Display::setMeasuredTemperature(double temperature)
+void Display::setMeasuredTemperature(float temperature)
 {
     ajustValue(&measuredTemperature, temperature);
 }

@@ -31,16 +31,16 @@ private:
     unsigned long nextRefresh;
     unsigned long refreshTime;
     LiquidCrystal_I2C lLcd;
-    void ajustValue(uint16_t *, double); // rounds and ajusts the value for the sets
+    void ajustValue(uint16_t *, float); // rounds and ajusts the value for the sets
 
 public:
     Display(unsigned long diplaysRefreshTime);
     ~Display();
     void initialize();
-    void setTargetSpeed(double speed);
-    void setTargetTemperature(double temperature);
-    void setMeasuredSpeed(double speed);
-    void setMeasuredTemperature(double temperature);
+    void setTargetSpeed(float speed);
+    void setTargetTemperature(float temperature);
+    void setMeasuredSpeed(float speed);
+    void setMeasuredTemperature(float temperature);
     void update(); // must be on the main loop
 };
 

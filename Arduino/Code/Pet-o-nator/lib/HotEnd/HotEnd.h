@@ -34,16 +34,16 @@ public:
     HotEnd(uint8_t control, uint8_t ntcRead, uint8_t rSelection,
            float Kp, float Ki, float Kd, double R1, double R2);
     ~HotEnd();
-    void setTemperature(double Temperature); // sets the target temperature
-    double getTemperature();                 // returns the target temperature
-    double readTemperature();                // returns the temperature from NTC
-    void incTemp();                          // increments temperature by one degree
-    void decTemp();                          // decrements temperature by one degree
-    void update();                           // Must be in the mais loop
-    void start();                            // Starts the heating
-    void stop();                             // Turns off the hearter
-    double temperature(double NtcReading);   // Returns the temperature in Kelvin from a NTC reading
-    double readNtc();                        // Returns the resistance of the NTC in Ohms
+    void setTemperature(float Temperature); // sets the target temperature
+    float getTemperature();                 // returns the target temperature
+    float readTemperature();                // returns the temperature from NTC
+    void incTemp();                         // increments temperature by one degree
+    void decTemp();                         // decrements temperature by one degree
+    void update();                          // Must be in the mais loop
+    void start();                           // Starts the heating
+    void stop();                            // Turns off the hearter
+    float temperature(double NtcReading);   // Returns the temperature in Kelvin from a NTC reading
+    double readNtc();                       // Returns the resistance of the NTC in Ohms
 };
 
 #endif

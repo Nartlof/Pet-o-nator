@@ -2,7 +2,7 @@
 #include <HotEnd.h>
 
 HotEnd::HotEnd(uint8_t control, uint8_t ntcReadPin, uint8_t rSelection,
-               double Kp, double Ki, double Kd, double R1, double R2)
+               float Kp, float Ki, float Kd, double R1, double R2)
 {
     hotEndPWM = control;
     hotEndNtcRead = ntcReadPin;
@@ -17,10 +17,12 @@ HotEnd::HotEnd(uint8_t control, uint8_t ntcReadPin, uint8_t rSelection,
     pinMode(hotEndNtcRead, INPUT);
     pinMode(hotEndRSelection, INPUT);
     // PID lPID(&measuredTemperature, &pwmValue, &targetTemperature, Kp, Ki, Kd, P_ON_E, DIRECT);
-    hotEndPID = PID(&measuredTemperature, &pwmValue, &targetTemperature, Kp, Ki, Kd, P_ON_E, DIRECT);
+    hotEndPID = QuickPID(&measuredTemperature, &pwmValue, &targetTemperature, Kp, Ki, Kd,
+                         QuickPID::pMode::pOnError,
+                         QuickPID::dMode::dOnMeas,
+                         QuickPID::iAwMode::iAwCondition,
+                         QuickPID::Action::direct);
     hotEndPID.SetOutputLimits(0, 255);
-    hotEndPID.SetSampleTime(100);
-    hotEndPID.SetMode(AUTOMATIC);
 }
 
 HotEnd::~HotEnd()

@@ -9,10 +9,11 @@ Date: 2022-12-09
 #ifndef PetonatorHOTEND
 #define PetonatorHOTEND
 
-#include <PID_v1.h>
+#include <Arduino.h>
+#include <QuickPID.h>
 #define MaxTemperature 573.15
 
-class HotEnd : private PID
+class HotEnd
 {
 private:
     uint8_t hotEndPWM;
@@ -20,17 +21,17 @@ private:
     uint8_t hotEndRSelection;
     double senseResistor1;
     double senseResistor2;
-    double targetTemperature;
-    double measuredTemperature;
-    double pwmValue;
+    float targetTemperature;
+    float measuredTemperature;
+    float pwmValue;
     bool started;
-    PID hotEndPID;
+    QuickPID hotEndPID;
     //  These are the figures to be used to calculate the temperature from the NTC reading
     const double ResistToTemp[4] = {7.06114140e-04, 2.69749565e-04, -6.99387329e-06, 3.01741645e-07};
 
 public:
     HotEnd(uint8_t control, uint8_t ntcRead, uint8_t rSelection,
-           double Kp, double Ki, double Kd, double R1, double R2);
+           float Kp, float Ki, float Kd, double R1, double R2);
     ~HotEnd();
     void setTemperature(double Temperature); // sets the target temperature
     double getTemperature();                 // returns the target temperature

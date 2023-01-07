@@ -9,20 +9,18 @@ HotEnd::HotEnd(uint8_t control, uint8_t ntcReadPin, uint8_t rSelection,
     hotEndRSelection = rSelection;
     senseResistor1 = R1;
     senseResistor2 = R2;
-    targetTemperature = 273.15;
-    measuredTemperature = 273.15;
+    targetTemperature = zeroCinK;
+    measuredTemperature = zeroCinK;
     pwmValue = 0;
     pinMode(hotEndPWM, OUTPUT);
     stop();
     pinMode(hotEndNtcRead, INPUT);
     pinMode(hotEndRSelection, INPUT);
-    // PID lPID(&measuredTemperature, &pwmValue, &targetTemperature, Kp, Ki, Kd, P_ON_E, DIRECT);
     hotEndPID = QuickPID(&measuredTemperature, &pwmValue, &targetTemperature, Kp, Ki, Kd,
                          QuickPID::pMode::pOnError,
                          QuickPID::dMode::dOnMeas,
                          QuickPID::iAwMode::iAwCondition,
                          QuickPID::Action::direct);
-    hotEndPID.SetOutputLimits(0, 255);
 }
 
 HotEnd::~HotEnd()
@@ -43,7 +41,7 @@ void HotEnd::setTemperature(double Temperature)
 
 double HotEnd::getTemperature()
 {
-    return targetTemperature - 273.15;
+    return targetTemperature - zeroCinK;
 }
 
 /*readTemperature()******************************************
@@ -53,7 +51,7 @@ double HotEnd::getTemperature()
  ************************************************************/
 double HotEnd::readTemperature()
 {
-    return measuredTemperature - 275.15;
+    return measuredTemperature - zeroCinK;
 }
 
 void HotEnd::incTemp()
@@ -66,7 +64,7 @@ void HotEnd::incTemp()
 
 void HotEnd::decTemp()
 {
-    if (targetTemperature > 273.15)
+    if (targetTemperature > zeroCinK)
     {
         targetTemperature--;
     }

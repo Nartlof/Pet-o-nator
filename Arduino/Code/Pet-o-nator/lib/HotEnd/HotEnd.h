@@ -24,6 +24,7 @@ private:
     float targetTemperature;
     float measuredTemperature;
     float pwmValue;
+    const float zeroCinK = 273.15;
     bool started;
     QuickPID hotEndPID;
     //  These are the figures to be used to calculate the temperature from the NTC reading

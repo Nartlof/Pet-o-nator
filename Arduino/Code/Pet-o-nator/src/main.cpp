@@ -19,6 +19,8 @@ void loop()
     treatKeybord();
     hotEnd.update();
     display.setMeasuredTemperature(hotEnd.readTemperature());
+    display.setTargetTemperature(hotEnd.getTemperature());
+    display.setTargetSpeed(motor.getSpeed());
     display.update();
 }
 
@@ -88,22 +90,18 @@ void treatKeyPressed(uint8_t key, bool repeat)
     {
     case tempUp:
         hotEnd.incTemp();
-        display.setTargetTemperature(hotEnd.getTemperature());
         break;
 
     case tempDown:
         hotEnd.decTemp();
-        display.setTargetTemperature(hotEnd.getTemperature());
         break;
 
     case speedUp:
         motor.incSpeed();
-        display.setTargetSpeed(motor.getSpeed());
         break;
 
     case speedDown:
         motor.decSpeed();
-        display.setTargetSpeed(motor.getSpeed());
         break;
     case startButton:
         motor.start();

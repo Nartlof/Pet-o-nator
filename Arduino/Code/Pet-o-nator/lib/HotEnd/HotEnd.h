@@ -42,6 +42,7 @@ public:
     void update();                          // Must be in the mais loop
     void start();                           // Starts the heating
     void stop();                            // Turns off the hearter
+    bool isStarted();                       // Returns weather or not the hot end is heating
     float temperature(double NtcReading);   // Returns the temperature in Kelvin from a NTC reading
     double readNtc();                       // Returns the resistance of the NTC in Ohms
 };

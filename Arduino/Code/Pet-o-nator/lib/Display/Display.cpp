@@ -10,6 +10,7 @@
 Display::Display(unsigned long diplaysRefreshTime)
 {
     anyChange = true;
+    started = false;
     targetSpeed = 0;
     targetTemperature = 0;
     measuredSpeed = 0;
@@ -60,16 +61,20 @@ void Display::setMeasuredTemperature(float temperature)
     ajustValue(&measuredTemperature, temperature);
 }
 
-/**************************************************************************/
-/*
-    update()
+void Display::setStarted(bool start){
+    started = start;
+}
 
-    Updates the display in case of any change
+/**************************************************************************
+ *
+ *   update()
 
-    NOTE:
-    - If no value have changed since last update, nothing will happen
-*/
-/**************************************************************************/
+ *   Updates the display in case of any change
+
+ *   NOTE:
+ *   - If no value have changed since last update, nothing will happen
+
+**************************************************************************/
 void Display::update()
 {
     if (anyChange && millis() > nextRefresh)
@@ -82,7 +87,14 @@ void Display::update()
         lLcd.print(buffer);
         sprintf(buffer, "Temp (C)   %3d   %3d", measuredTemperature, targetTemperature);
         lLcd.print(buffer);
-        lLcd.print(F(" (mm/min)           "));
+        if (started)
+        {
+            lLcd.print(F(" (mm/min)    running"));
+        }
+        else
+        {
+            lLcd.print(F(" (mm/min)    stopped"));
+        }
         anyChange = false;
         nextRefresh = millis() + refreshTime;
     }

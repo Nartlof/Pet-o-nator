@@ -28,6 +28,7 @@ private:
     uint16_t measuredSpeed;
     uint16_t measuredTemperature;
     bool anyChange;
+    bool started;
     unsigned long nextRefresh;
     unsigned long refreshTime;
     LiquidCrystal_I2C lLcd;
@@ -42,6 +43,7 @@ public:
     void setMeasuredSpeed(float speed);
     void setMeasuredTemperature(float temperature);
     void update(); // must be on the main loop
+    void setStarted(bool start); // Prints the "running" status on display
 };
 
 #endif

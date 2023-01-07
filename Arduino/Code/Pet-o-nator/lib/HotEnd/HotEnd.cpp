@@ -76,6 +76,9 @@ void HotEnd::update()
     if (started)
     {
         hotEndPID.Compute();
+        // Serial.print(hotEndPID.GetKp());
+        // Serial.print(" ");
+        // Serial.println(pwmValue);
         analogWrite(hotEndPWM, pwmValue);
     }
 }
@@ -83,11 +86,15 @@ void HotEnd::update()
 void HotEnd::start()
 {
     started = true;
+    hotEndPID.SetMode(QuickPID::Control::automatic);
 }
+
+bool HotEnd::isStarted() { return started; }
 
 void HotEnd::stop()
 {
     started = false;
+    hotEndPID.SetMode(QuickPID::Control::manual);
     analogWrite(hotEndPWM, 0);
 }
 

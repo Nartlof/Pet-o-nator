@@ -21,6 +21,7 @@ void loop()
     display.setMeasuredTemperature(hotEnd.readTemperature());
     display.setTargetTemperature(hotEnd.getTemperature());
     display.setTargetSpeed(motor.getSpeed());
+    display.setStarted(hotEnd.isStarted() || motor.isStarted());
     display.update();
 }
 

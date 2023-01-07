@@ -39,6 +39,7 @@ public:
     void update(); // updated PID control. Must be in mail loop
     void start();  // turns the motor on
     void stop();   // turns the motor off
+    bool isStarted(); // returns weather or not the motor is running
 };
 
 #endif

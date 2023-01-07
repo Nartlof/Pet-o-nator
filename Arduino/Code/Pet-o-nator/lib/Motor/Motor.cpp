@@ -94,6 +94,8 @@ void Motor::start()
     started = true;
 }
 
+bool Motor::isStarted() { return started; }
+
 void Motor::stop()
 {
     analogWrite(pwmPin, 0);

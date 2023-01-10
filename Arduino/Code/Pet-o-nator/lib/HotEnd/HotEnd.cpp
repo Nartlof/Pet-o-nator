@@ -16,11 +16,12 @@ HotEnd::HotEnd(uint8_t control, uint8_t ntcReadPin, uint8_t rSelection,
     stop();
     pinMode(hotEndNtcRead, INPUT);
     pinMode(hotEndRSelection, INPUT);
-    hotEndPID = QuickPID(&measuredTemperature, &pwmValue, &targetTemperature, Kp, Ki, Kd,
-                         QuickPID::pMode::pOnError,
-                         QuickPID::dMode::dOnMeas,
-                         QuickPID::iAwMode::iAwCondition,
-                         QuickPID::Action::direct);
+    hotEndPID = QuickPID(&measuredTemperature, &pwmValue, &targetTemperature);
+    hotEndPID.SetTunings(Kp, Ki, Kd);
+    hotEndPID.SetProportionalMode(QuickPID::pMode::pOnError);
+    hotEndPID.SetDerivativeMode(QuickPID::dMode::dOnError);
+    hotEndPID.SetAntiWindupMode(QuickPID::iAwMode::iAwClamp);
+    hotEndPID.SetControllerDirection(QuickPID::Action::direct);
 }
 
 HotEnd::~HotEnd()
@@ -76,10 +77,14 @@ void HotEnd::update()
     if (started)
     {
         hotEndPID.Compute();
-        // Serial.print(hotEndPID.GetKp());
-        // Serial.print(" ");
-        // Serial.println(pwmValue);
-        analogWrite(hotEndPWM, pwmValue);
+        if ((millis() & 255UL) <= pwmValue)
+        {
+            digitalWrite(hotEndPWM, HIGH);
+        }
+        else
+        {
+            digitalWrite(hotEndPWM, LOW);
+        }
     }
 }
 
@@ -95,7 +100,7 @@ void HotEnd::stop()
 {
     started = false;
     hotEndPID.SetMode(QuickPID::Control::manual);
-    analogWrite(hotEndPWM, 0);
+    digitalWrite(hotEndPWM, LOW);
 }
 
 // Returns the resistence of the NTC in Ohms

@@ -3,9 +3,8 @@
 void setup()
 {
     uint8_t keyPins[keboardBits] = {keboardA0, keboardA1, keboardA2};
-    // Serial.begin(9600);
+    // Serial.begin(115200);
     // Serial.println(F("Iniciando..."));
-    // Serial.println(F("Setando o teclado"));
     for (uint8_t i = 0; i < keboardBits; i++)
     {
         keyboard.addPin(keyPins[i]);
@@ -89,6 +88,11 @@ void treatKeyPressed(uint8_t key, bool repeat)
 {
     switch (key)
     {
+    case preSetButton:
+        hotEnd.setTemperature(HotEndPreSetTemperature);
+        motor.setRPM(MotorPreSetRpm);
+        break;
+
     case tempUp:
         hotEnd.incTemp();
         break;

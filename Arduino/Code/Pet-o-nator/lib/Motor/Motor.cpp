@@ -1,12 +1,31 @@
 #include <Arduino.h>
 #include <Motor.h>
 
-Motor::Motor(uint8_t control, uint8_t feebBack)
+/*Constructor**********************************************************
+ * control - Pin where the PWM signal goes
+ * feedBack - Pin where the interruption for the IR sensor goes
+ * speedToRPM - Relation between one revolution and the actual speed
+ * Kp, Ki, Kd - Constants for the PID controler.
+ * pulsesPerRevolution - how many pulses sensed represents a revolution
+ * timeOut - How long to wait until consider the motor has stoped (ms)
+ ***********************************************************************/
+Motor::Motor(uint8_t control, uint8_t feebBack, float speedToRPM,
+             float Kp, float Ki, float Kd,
+             uint8_t pulsesPerRevolution,
+             unsigned long timeOut)
 {
     pwmPin = control;
-    tacoPin = feebBack;
     targetRPM = 0;
     measuredRPM = 0;
+    pwmValue = 0;
+    this->speedToRpm = speedToRPM;
+    tachometer = Tachometer(pulsesPerRevolution, feebBack, timeOut, 8);
+    motorPID = QuickPID(&measuredRPM, &pwmValue, &targetRPM);
+    motorPID.SetTunings(Kp, Ki, Kd);
+    motorPID.SetProportionalMode(QuickPID::pMode::pOnError);
+    motorPID.SetDerivativeMode(QuickPID::dMode::dOnError);
+    motorPID.SetAntiWindupMode(QuickPID::iAwMode::iAwClamp);
+    motorPID.SetControllerDirection(QuickPID::Action::direct);
     pinMode(pwmPin, OUTPUT);
     stop();
     pinMode(feebBack, INPUT_PULLUP);
@@ -16,7 +35,7 @@ Motor::~Motor()
 {
 }
 
-void Motor::setRPM(double RPM)
+void Motor::setRPM(float RPM)
 {
     if (RPM <= MaxRPM)
     {
@@ -28,36 +47,36 @@ void Motor::setRPM(double RPM)
     }
 }
 
-double Motor::getRPM()
+float Motor::getRPM()
 {
     return targetRPM;
 }
 
-double Motor::readRPM()
+float Motor::readRPM()
 {
     return measuredRPM;
 }
 
-void Motor::setSpeed(double speed)
+void Motor::setSpeed(float speed)
 {
-    setRPM(speed * SpeedToRpm);
+    setRPM(speed * speedToRpm);
 }
 
-double Motor::getSpeed()
+float Motor::getSpeed()
 {
-    return round(targetRPM / SpeedToRpm);
+    return round(targetRPM / speedToRpm);
 }
 
-double Motor::readSpeed()
+float Motor::readSpeed()
 {
-    return round(measuredRPM / SpeedToRpm);
+    return round(measuredRPM / speedToRpm);
 }
 
 void Motor::incSpeed()
 {
     if (targetRPM < MaxRPM)
     {
-        targetRPM += SpeedToRpm;
+        targetRPM += speedToRpm;
         if (targetRPM > MaxRPM)
         {
             targetRPM = MaxRPM;
@@ -69,7 +88,7 @@ void Motor::decSpeed()
 {
     if (targetRPM > 0)
     {
-        targetRPM -= SpeedToRpm;
+        targetRPM -= speedToRpm;
         if (targetRPM < 0)
         {
             targetRPM = 0;
@@ -82,6 +101,9 @@ void Motor::update()
     if (started)
     {
         // Write PID control here
+        measuredRPM = tachometer.readRPM();
+        motorPID.Compute();
+        analogWrite(pwmPin, pwmValue);
     }
     else
     {
@@ -92,6 +114,7 @@ void Motor::update()
 void Motor::start()
 {
     started = true;
+    tachometer.initialize();
 }
 
 bool Motor::isStarted() { return started; }

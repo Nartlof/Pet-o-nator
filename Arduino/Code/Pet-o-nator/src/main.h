@@ -12,7 +12,8 @@ Display display(DisplayRefreshTime);
 HotEnd hotEnd(HotEndPwmPin, HotEndNtcRead, HotEndRSelection,
               HotEndKp, HotEndKi, HotEndKd, HotEndSenseResistor1, HotEndSenseResistor2);
 
-Motor motor(MotorPwmPin, MotorFeedbackPin,MotorSpeedToRpm);
+Motor motor(MotorPwmPin, MotorFeedbackPin, MotorSpeedToRpm,
+            MotorKp, MotorKi, MotorKd, MotorPulsesPerRevolution, MotorTimeOut);
 
 void treatKeybord(void);
 void treatKeyPressed(uint8_t key, bool repeat);

@@ -10,35 +10,42 @@ Date: 2022-12-09
 #define PetonatorMOTOR
 
 #include <Arduino.h>
+#include <Tachometer.h>
+#include <QuickPID.h>
 
 #define MaxRPM 10000.0
-#define SpeedToRpm 97.0
 
 class Motor
 {
 private:
-    uint8_t pwmPin;     // this is the pin for the PWM to control the motor
-    uint8_t tacoPin;    // pin where the photosensor is connected
-    double targetRPM;   // the target RPM for the motor
-    double measuredRPM; // actual RPM
+    uint8_t pwmPin;    // this is the pin for the PWM to control the motor
+    float targetRPM;   // the target RPM for the motor
+    float measuredRPM; // actual RPM
+    float speedToRpm;  // relation between the RPM and speed of the device
+    float pwmValue;
     bool started;
+    Tachometer tachometer; // class to measure the motor RPM
+    QuickPID motorPID;     // PID controler
 
     /* data */
 public:
-    Motor(uint8_t control, uint8_t feebBack);
+    Motor(uint8_t control, uint8_t feebBack, float speedToRPM,
+          float Kp, float Ki, float Kd,
+          uint8_t pulsesPerRevolution,
+          unsigned long timeOut);
     ~Motor();
-    void setRPM(double);   // sets the target RPM for the motor
-    double getRPM();       // returns the set RPM
-    double readRPM();      // returns the measured RPM
-    void setSpeed(double); // sets the pulling speed
-    double getSpeed();     // returns the target pulling speed
-    double readSpeed();    // returns the actual pulling speed
-    void incSpeed();       // increments speed by 1mm/min
-    void decSpeed();       // decrements speed by 1mm/min
+    void setRPM(float);   // sets the target RPM for the motor
+    float getRPM();       // returns the set RPM
+    float readRPM();      // returns the measured RPM
+    void setSpeed(float); // sets the pulling speed
+    float getSpeed();     // returns the target pulling speed
+    float readSpeed();    // returns the actual pulling speed
+    void incSpeed();      // increments speed by 1mm/min
+    void decSpeed();      // decrements speed by 1mm/min
 
-    void update(); // updated PID control. Must be in mail loop
-    void start();  // turns the motor on
-    void stop();   // turns the motor off
+    void update();    // updated PID control. Must be in mail loop
+    void start();     // turns the motor on
+    void stop();      // turns the motor off
     bool isStarted(); // returns weather or not the motor is running
 };
 

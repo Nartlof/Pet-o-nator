@@ -2,7 +2,13 @@
 
 #include "Tachometer.h"
 
-Tachometer *Tachometer::ThisTachometer=0;
+// Defining static members
+uint8_t Tachometer::interruptionNumber = 0;
+uint8_t Tachometer::readings = 0;
+unsigned long *Tachometer::periods = NULL;
+uint8_t Tachometer::periodIndex = 0;
+unsigned long Tachometer::lastPulse = 0;
+bool Tachometer::hasPulsed = false;
 
 /*Default constructor*/
 Tachometer::Tachometer() {}
@@ -17,14 +23,15 @@ Tachometer::Tachometer() {}
 Tachometer::Tachometer(uint8_t pulsesPerRevolution = 2, uint8_t Pin = 2, unsigned long Timeout = 300, uint8_t Readings = 8)
 {
     // Creating a pointer to itself to manage the interruption
-    ThisTachometer = this;
     this->pulsesPerRevolution = pulsesPerRevolution;
     interruptPin = Pin;
+    interruptionNumber = digitalPinToInterrupt(Pin);
     zeroTimeout = Timeout * 1000; // Converting to micro seconds
     readings = Readings;
     periods = new unsigned long[readings];
+    pinMode(interruptPin, INPUT_PULLUP);
     initialize();
-    attachInterrupt(digitalPinToInterrupt(interruptPin), pulseEventISR, RISING);
+    attachInterrupt(interruptionNumber, pulseEventISR, RISING);
 }
 
 Tachometer::~Tachometer()
@@ -71,7 +78,10 @@ uint16_t Tachometer::readRPM()
             for (uint8_t i = 0; i < readings; i++)
             {
                 avaregePeriod += periods[i];
+                Serial.print(periods[i]);
+                Serial.print(" ");
             }
+            Serial.println(periodIndex);
         }
         avaregePeriod /= readings;
         unsigned long revolutionPeriod; // The time needed for one revolution
@@ -102,14 +112,12 @@ uint16_t Tachometer::readRPM()
     return measuredRPM;
 }
 
-// This function is just a workaround to create an interruption inside a class
+// This function is attached to the interruption
 void Tachometer::pulseEventISR()
 {
-    ThisTachometer->pulseEvent();
-}
-
-void Tachometer::pulseEvent()
-{
+    // Deatach the interruption to avoid inner calling
+    detachInterrupt(interruptionNumber);
+    digitalWrite(DD4, !digitalRead(DD4));
     // This function must be as fast as possible.
     // Before anyting, saves the instance when a pulse occurrs
     unsigned long now = micros();
@@ -121,13 +129,17 @@ void Tachometer::pulseEvent()
     // it by -1 in case it is negative.
     // This is a branchless way to solve the problem:
     thisPeriod *= 1 - 2 * (int8_t)(thisPeriod < 0);
+    hasPulsed = true;
     // Saves the period in the buffer
     periods[periodIndex] = thisPeriod;
     // Signals that a pulse had occurred.
-    hasPulsed = true;
+    // hasPulsed = true;
     // updates variables for the next cicle.
     lastPulse = now;
     periodIndex++;
     if (periodIndex == readings)
         periodIndex = 0;
+    // Reattach interruption
+    attachInterrupt(interruptionNumber, pulseEventISR, RISING);
+    return;
 }

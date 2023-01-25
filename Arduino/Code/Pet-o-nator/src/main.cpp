@@ -3,13 +3,15 @@
 void setup()
 {
     uint8_t keyPins[keboardBits] = {keboardA0, keboardA1, keboardA2};
-    // Serial.begin(115200);
-    // Serial.println(F("Iniciando..."));
+    Serial.begin(115200);
+    Serial.println(F("Iniciando..."));
     for (uint8_t i = 0; i < keboardBits; i++)
     {
         keyboard.addPin(keyPins[i]);
     }
     display.initialize();
+    pinMode(DD4, OUTPUT);
+    digitalWrite(DD4, !digitalRead(DD4));
     // Serial.println(F("Lendo o teclado"));
 }
 
@@ -17,8 +19,10 @@ void loop()
 {
     treatKeybord();
     hotEnd.update();
+    motor.update();
     display.setMeasuredTemperature(hotEnd.readTemperature());
     display.setTargetTemperature(hotEnd.getTemperature());
+    display.setMeasuredSpeed(motor.readSpeed());
     display.setTargetSpeed(motor.getSpeed());
     display.setStarted(hotEnd.isStarted() || motor.isStarted());
     display.update();
@@ -116,7 +120,9 @@ void treatKeyPressed(uint8_t key, bool repeat)
         motor.stop();
         hotEnd.stop();
         break;
-
+    case 3:
+        digitalWrite(DD4, !digitalRead(DD4));
+        break;
     default:
         break;
     }

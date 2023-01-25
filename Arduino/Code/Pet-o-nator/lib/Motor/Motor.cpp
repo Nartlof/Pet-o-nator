@@ -69,7 +69,7 @@ float Motor::getSpeed()
 
 float Motor::readSpeed()
 {
-    return round(measuredRPM / speedToRpm);
+    return tachometer.readRPM(); // round(measuredRPM / speedToRpm);
 }
 
 void Motor::incSpeed()
@@ -103,7 +103,14 @@ void Motor::update()
         // Write PID control here
         measuredRPM = tachometer.readRPM();
         motorPID.Compute();
-        analogWrite(pwmPin, pwmValue);
+        Serial.print(motorPID.GetPterm());
+        Serial.print(" ");
+        Serial.print(targetRPM);
+        Serial.print(" ");
+        Serial.print(measuredRPM);
+        Serial.print(" ");
+        Serial.println(pwmValue);
+        analogWrite(pwmPin, 50);
     }
     else
     {

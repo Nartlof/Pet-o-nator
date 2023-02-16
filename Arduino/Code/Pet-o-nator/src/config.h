@@ -14,12 +14,12 @@
 // Configuring Motor
 #define MotorPwmPin 10
 #define MotorFeedbackPin 2
-#define MotorPreSetRpm 1500
-#define MotorSpeedToRpm 97          // Reduction reatio of the gearbox
+#define MotorSpeedToRpm 10.3798     // Converts motor RPM to mm/min traction
+#define MotorPreSetRpm 50 * MotorSpeedToRpm
 #define MotorPulsesPerRevolution 13 // How many pulses represent one turn of the motor
-#define MotorKp 1                   // Proportional PID constant
-#define MotorKi 0                   // Integral PID constant
-#define MotorKd 0                   // Derivative PID constant
+#define MotorKp 0.03125             // Proportional PID constant
+#define MotorKi 0.01171875          // Integral PID constant
+#define MotorKd 0.001953125         // Derivative PID constant
 #define MotorTimeOut 300            // How many ms to wait until consider the motor has stoped
 
 // Configuring Hot End

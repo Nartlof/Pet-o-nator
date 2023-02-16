@@ -19,7 +19,7 @@ Motor::Motor(uint8_t control, uint8_t feebBack, float speedToRPM,
     measuredRPM = 0;
     pwmValue = 0;
     this->speedToRpm = speedToRPM;
-    tachometer = Tachometer(pulsesPerRevolution, feebBack, timeOut, 8);
+    tachometer = Tachometer(pulsesPerRevolution, feebBack, timeOut, 4);
     motorPID = QuickPID(&measuredRPM, &pwmValue, &targetRPM);
     motorPID.SetTunings(Kp, Ki, Kd);
     motorPID.SetProportionalMode(QuickPID::pMode::pOnError);
@@ -69,7 +69,7 @@ float Motor::getSpeed()
 
 float Motor::readSpeed()
 {
-    return tachometer.readRPM(); // round(measuredRPM / speedToRpm);
+    return round(measuredRPM / speedToRpm);
 }
 
 void Motor::incSpeed()
@@ -103,14 +103,14 @@ void Motor::update()
         // Write PID control here
         measuredRPM = tachometer.readRPM();
         motorPID.Compute();
-        Serial.print(motorPID.GetPterm());
-        Serial.print(" ");
+        /*Serial.print("targetRPM=");
         Serial.print(targetRPM);
-        Serial.print(" ");
+        Serial.print(" measuredRPM=");
         Serial.print(measuredRPM);
-        Serial.print(" ");
-        Serial.println(pwmValue);
-        analogWrite(pwmPin, 50);
+        Serial.print(" pwmValue=");
+        Serial.println(pwmValue);*/
+        analogWrite(pwmPin, pwmValue);
+        // analogWrite(pwmPin, 70);
     }
     else
     {
@@ -122,12 +122,15 @@ void Motor::start()
 {
     started = true;
     tachometer.initialize();
+    motorPID.SetMode(QuickPID::Control::automatic);
 }
 
 bool Motor::isStarted() { return started; }
 
 void Motor::stop()
 {
+    motorPID.SetMode(QuickPID::Control::manual);
     analogWrite(pwmPin, 0);
     started = false;
+    measuredRPM = 0;
 }

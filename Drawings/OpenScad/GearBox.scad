@@ -19,7 +19,7 @@ NozzleHeight = 35;
 ScrewAxisLength = 100;
 
 
-//Estabelecendo a circunferência do carretel.  Representa a quantidade de filamento
+//Estabelecendo a circunferência do carretel. Representa a quantidade de filamento
 //recolhido por rotação
 SpoolCircunfetence = 250;
 
@@ -74,19 +74,36 @@ FirstGearTeeth = floor((SpoolExternalDiameter + NozzleHeight)/FirstGearModulus)*
 SecondGearTeeth = floor(FirstGearTeeth - (Bearing608ExternalDiamenter + PartsMinThickness - ExitGearTeeth/2));
 ThirdGearTeeth = floor(SecondGearTeeth - ExitGearTeeth/2);
 FourthGearTeeth = floor((ThirdGearTeeth - ExitGearTeeth/2)/MotorGearModulus);
-echo("Numero de dentes da engrenagem do hub= ", FirstGearTeeth);
-echo("Ganho mecânico 1 = ", FirstGearTeeth/ExitGearTeeth);
-echo("Numero de dentes da engrenagem 2= ", SecondGearTeeth);
-echo("Ganho mecânico 2 = ", SecondGearTeeth/ExitGearTeeth);
-echo("Numero de dentes da engrenagem 3= ", ThirdGearTeeth);
-echo("Ganho mecânico 3 = ", ThirdGearTeeth/ExitGearTeeth);
-echo("Numero de dentes da engrenagem 4= ", FourthGearTeeth);
-echo("Ganho mecânico 4 = ", FourthGearTeeth/MotorGearTeeth);
+
+ImprimeGanhoMecanico();
+
+
 //Distancias entre os eixos das engrenages
     Distance1to2 = (FirstGearTeeth+ExitGearTeeth)/2;
     Distance2to3 = (SecondGearTeeth+ExitGearTeeth)/2;
     Distance3to4 = (ThirdGearTeeth+ExitGearTeeth)/2;
     Distance4ToM = MotorGearModulus * (FourthGearTeeth + MotorGearTeeth)/2;
+
+
+module ImprimeGanhoMecanico(){
+    //Calculando ganho mecânico
+    GM1 = FirstGearTeeth/ExitGearTeeth;
+    GM2 = SecondGearTeeth/ExitGearTeeth;
+    GM3 = ThirdGearTeeth/ExitGearTeeth;
+    GM4 = FourthGearTeeth/MotorGearTeeth;
+    GMT = GM1 * GM2 * GM3 * GM4;
+    echo("Numero de dentes da engrenagem do hub= ", FirstGearTeeth);
+    echo("Ganho mecânico 1 = ", GM1);
+    echo("Numero de dentes da engrenagem 2= ", SecondGearTeeth);
+    echo("Ganho mecânico 2 = ", GM2);
+    echo("Numero de dentes da engrenagem 3= ", ThirdGearTeeth);
+    echo("Ganho mecânico 3 = ", GM3);
+    echo("Numero de dentes da engrenagem 4= ", FourthGearTeeth);
+    echo("Ganho mecânico 4 = ", GM4);
+    echo("Ganho mecânico total = ", GMT);
+    echo("RPM to mm/min = ", GMT/SpoolCircunfetence);
+}
+
 
 //Modulos de posicionamento
 module PositionFirstGear(){

@@ -29,7 +29,7 @@ Tachometer::Tachometer(uint8_t pulsesPerRevolution = 2, uint8_t Pin = 2, unsigne
     zeroTimeout = Timeout * 1000; // Converting to micro seconds
     readings = Readings;
     periods = new unsigned long[readings];
-    pinMode(interruptPin, INPUT_PULLUP);
+    pinMode(interruptPin, INPUT);
     initialize();
     attachInterrupt(interruptionNumber, pulseEventISR, RISING);
 }
@@ -71,17 +71,17 @@ uint16_t Tachometer::readRPM()
     {
         unsigned long avaregePeriod;
         // Computes the avarege period until no pulse has been detected durig the calculation
-        while (hasPulsed)
+        // but no more than two times. For large pulse rates it can leed to an infinit loop.
+        uint8_t tryTwoTimes = 0;
+        while (hasPulsed && tryTwoTimes < 2)
         {
+            tryTwoTimes++;
             hasPulsed = false;
             avaregePeriod = 0;
             for (uint8_t i = 0; i < readings; i++)
             {
                 avaregePeriod += periods[i];
-                Serial.print(periods[i]);
-                Serial.print(" ");
             }
-            Serial.println(periodIndex);
         }
         avaregePeriod /= readings;
         unsigned long revolutionPeriod; // The time needed for one revolution
@@ -117,7 +117,6 @@ void Tachometer::pulseEventISR()
 {
     // Deatach the interruption to avoid inner calling
     detachInterrupt(interruptionNumber);
-    digitalWrite(DD4, !digitalRead(DD4));
     // This function must be as fast as possible.
     // Before anyting, saves the instance when a pulse occurrs
     unsigned long now = micros();

@@ -1,3 +1,10 @@
+/*
+This file is part of the Pet-o-Nator project
+Contant: Spool for loose filament
+Autor: Carlos Eduardo Foltran
+Last update 2023-02-26
+*/
+
 Thickness = 2;
 Stiffener = 6;
 ExternalDiameter = 220;
@@ -233,7 +240,7 @@ module Disk(){
 }
 
 
-//Disk();
+Disk();
 AxialRoller();
 //RarialRoller();
 

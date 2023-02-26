@@ -1,3 +1,10 @@
+/*
+This file is part of the Pet-o-Nator project
+Contant: Guide for the PET tape
+Autor: Carlos Eduardo Foltran
+Last update 2023-02-26
+*/
+
 TapeThick = 1;
 TapeWidth = 20;
 BlockMinThickness = 5;

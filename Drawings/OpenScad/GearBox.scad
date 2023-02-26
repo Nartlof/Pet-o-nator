@@ -1,4 +1,11 @@
-use <gear\gears.scad>
+/*
+This file is part of the Pet-o-Nator project
+Contant: Gears for the machine
+Autor: Carlos Eduardo Foltran
+Last update 2023-02-26
+*/
+
+use <Library\gear\gears.scad>
 PartsMinThickness = 3;
 MotorDiameter = 32;
 MotorAxisDiameter = 3.2;

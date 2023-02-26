@@ -14,13 +14,13 @@
 // Configuring Motor
 #define MotorPwmPin 10
 #define MotorFeedbackPin 2
-#define MotorSpeedToRpm 10.3798     // Converts motor RPM to mm/min traction
-#define MotorPreSetRpm 50 * MotorSpeedToRpm
-#define MotorPulsesPerRevolution 13 // How many pulses represent one turn of the motor
-#define MotorKp 0.03125             // Proportional PID constant
-#define MotorKi 0.01171875          // Integral PID constant
-#define MotorKd 0.001953125         // Derivative PID constant
-#define MotorTimeOut 300            // How many ms to wait until consider the motor has stoped
+#define MotorSpeedToRpm 10.3798 // Converts motor RPM to mm/min traction
+#define MotorPreSetRpm 65 * MotorSpeedToRpm
+#define MotorPulsesPerRevolution 4 // How many pulses represent one turn of the motor
+#define MotorKp 0.03125            // Proportional PID constant
+#define MotorKi 0.01171875         // Integral PID constant
+#define MotorKd 0.001953125        // Derivative PID constant
+#define MotorTimeOut 300           // How many ms to wait until consider the motor has stoped
 
 // Configuring Hot End
 #define HotEndPwmPin 9

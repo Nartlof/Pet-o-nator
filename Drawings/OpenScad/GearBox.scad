@@ -149,9 +149,9 @@ module ExitGear(AxisDiameter = IntermidiateGearAxis, Direction = Outwards, Eleva
 
 module MotorGear(){
     //Diametro do disco sensor
-    SensorDiscDiameter = MotorDiameter + 2*IRSensorDiameter + 4*PartsMinThickness;
+    SensorDiscDiameter = MotorDiameter + 2*IRSensorDiameter + 3*PartsMinThickness;
     SensorHolesRadius = MotorDiameter/2 + PartsMinThickness+ IRSensorDiameter/2;
-    Holes = floor((2*PI*SensorHolesRadius)/(2*IRSensorDiameter));
+    Holes = 4; //floor((2*PI*SensorHolesRadius)/(2*IRSensorDiameter));
     Angle = 360/Holes;
     //Ângulo de hélice para saida é -20 e entrada 20
     //Esta é uma engrenagem de saída

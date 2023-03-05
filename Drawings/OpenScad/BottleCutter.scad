@@ -68,7 +68,7 @@ module block() {
             screwPocket(Head = FixingScrewHead, Shaft = FixingScrewShaft,
                         Lenght = BlockHeight);
       }
-      translate([ i * xScrewPosition, -ySupporScrew / 3, 0 ]) mainScrew();
+      translate([ i * xScrewPosition, -ySupporScrew / 3, -1 ]) mainScrew();
     }
     // Parafuso de suporte
     translate([ 0, ySupporScrew * 2 / 3, -1 ])

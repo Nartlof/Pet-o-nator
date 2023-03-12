@@ -67,15 +67,16 @@ uint16_t Tachometer::readRPM()
 {
     // The calculations must be performed only if a pulse has been detected
     // and repeted if a pulse occurrs again during the computation
+    static unsigned long lastAvaregePeriod = zeroTimeout;
     if (hasPulsed)
     {
         unsigned long avaregePeriod;
         // Computes the avarege period until no pulse has been detected durig the calculation
         // but no more than two times. For large pulse rates it can leed to an infinit loop.
-        uint8_t tryTwoTimes = 0;
-        while (hasPulsed && tryTwoTimes < 2)
+        uint8_t tryTwice = 0;
+        while (hasPulsed && tryTwice < 2)
         {
-            tryTwoTimes++;
+            tryTwice++;
             hasPulsed = false;
             avaregePeriod = 0;
             for (uint8_t i = 0; i < readings; i++)
@@ -84,6 +85,7 @@ uint16_t Tachometer::readRPM()
             }
         }
         avaregePeriod /= readings;
+        lastAvaregePeriod = avaregePeriod;
         unsigned long revolutionPeriod; // The time needed for one revolution
         revolutionPeriod = avaregePeriod * pulsesPerRevolution;
         // First check if the motor is too slow
@@ -104,9 +106,20 @@ uint16_t Tachometer::readRPM()
     else
     {
         // Check if the motor is locked
-        if (micros() - lastPulse > zeroTimeout)
+        unsigned long sinceLastPulse = micros() - lastPulse;
+        if (sinceLastPulse > zeroTimeout)
         {
+            // motor is locked becaus too much time has passed
             measuredRPM = 0;
+        }
+        else
+        {
+            // Checking if rotation has decreased abruptly
+            if (sinceLastPulse > 1.1875 * lastAvaregePeriod)
+            {
+                // if so, updates measuredRPM
+                measuredRPM = 60000000 / (sinceLastPulse * pulsesPerRevolution);
+            }
         }
     }
     return measuredRPM;

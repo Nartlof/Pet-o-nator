@@ -24,9 +24,13 @@ BlockRoundingRadius = 5;
 BlockHeight = 15;
 FixingScrewHead = 7.5;
 FixingScrewShaft = 4;
+// Supporting rod
+RodDiameter = 12;
+RodDistance = 50;
 
-BlockWidth = 2.5 * BearingOuterDiameter + 2 * BlockRoundingRadius;
-BlockLenght = 1.5 * BearingOuterDiameter + 2 * BlockRoundingRadius;
+BlockWidth = 2.5 * BearingOuterDiameter + 2 * BlockRoundingRadius + RodDistance;
+BlockLenght =
+    1.5 * BearingOuterDiameter + 2 * BlockRoundingRadius + RodDiameter / 2;
 
 Gap = .25;
 
@@ -68,11 +72,23 @@ module block() {
             screwPocket(Head = FixingScrewHead, Shaft = FixingScrewShaft,
                         Lenght = BlockHeight);
       }
-      translate([ i * xScrewPosition, -ySupporScrew / 3, -1 ]) mainScrew();
     }
-    // Parafuso de suporte
-    translate([ 0, ySupporScrew * 2 / 3, -1 ])
-        cylinder(h = 2 * BlockHeight, d = ScrewType - 2 * Gap, center = false);
+    // Parafusos de corte e suporte
+    translate([ RodDistance / 2, 0, 0 ]) {
+      // Parafusos de corte
+      for (i = [ -1, 1 ]) {
+        translate([ i * xScrewPosition, -ySupporScrew / 3, -1 ]) mainScrew();
+      }
+      // Parafuso de suporte
+      translate([ 0, ySupporScrew * 2 / 3, -1 ]) cylinder(
+          h = 2 * BlockHeight, d = ScrewType - 2 * Gap, center = false);
+    }
+    // Haste de apoio
+    translate([
+      -RodDistance / 2, BlockLenght / 2 - RodDiameter / 2 - BlockRoundingRadius,
+      BlockHeight / 2
+    ]) cylinder(d1 = RodDiameter - 2 * Gap, d2 = RodDiameter + 2 * Gap,
+                h = BlockHeight + 2 * Gap, center = true);
   }
 }
 

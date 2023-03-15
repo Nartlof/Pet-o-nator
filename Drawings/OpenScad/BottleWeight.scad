@@ -12,8 +12,9 @@ FillingDensityG_Cm3 = 11.34; // Density of lead in g/cm3
 PlasticDensityG_Cm3 = 1.34;  // Density of PET. Change for another plastic
 WallThickness = 2;
 InternalDiameter = 29.5; // Diameter of a soda bottle thread
-Height = 20.3713;
+Height = 20.9;
 Inlid = 0.5;
+LidPart = false;
 // Apparent density of the filling compared to real material
 ApparentDensity = 0.63; // Use 1 if the density refers to loose material aready
 // This figure refers to loose spheres of lead
@@ -27,15 +28,16 @@ CoreInnerRadius = InternalDiameter / 2 + WallThickness;
 FillingDensity = ApparentDensity * FillingDensityG_Cm3 / 1000;
 
 // Calculating the width of the internal core
+InnerCoreHeight = CoreHeight - Inlid;
 
-CoreWidth = (sqrt(CoreHeight * (CoreHeight * CoreInnerRadius ^
-                                2 + TotalWeight / (FillingDensity * PI))) -
-             CoreHeight * CoreInnerRadius) /
-            CoreHeight;
+CoreWidth = (sqrt(InnerCoreHeight * (InnerCoreHeight * CoreInnerRadius ^
+                                     2 + TotalWeight / (FillingDensity * PI))) -
+             InnerCoreHeight * CoreInnerRadius) /
+            InnerCoreHeight;
 
 Width = CoreWidth + 2 * WallThickness;
 
-echo("CoreHeight", CoreHeight);
+echo("InnerCoreHeight", InnerCoreHeight);
 echo("CoreWith:", CoreWidth);
 
 Gap = .25;
@@ -63,7 +65,7 @@ module MainBody() {
 }
 
 module ScrewPosition() {
-  for (i = [ 0, 90, 180, 270 ]) {
+  for (i = [ 5, 90, 175, 270 ]) {
     rotate([ 0, 0, i ]) {
       for (j = [ -1, 1 ]) {
         translate(v = [
@@ -111,4 +113,4 @@ module CupLid(Lid = false) {
   }
 }
 
-CupLid(Lid = true);
+CupLid(Lid = LidPart);

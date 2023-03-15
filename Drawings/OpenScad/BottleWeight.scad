@@ -13,6 +13,7 @@ PlasticDensityG_Cm3 = 1.34;  // Density of PET. Change for another plastic
 WallThickness = 2;
 InternalDiameter = 29.5; // Diameter of a soda bottle thread
 Height = 20.3713;
+Inlid = 0.5;
 // Apparent density of the filling compared to real material
 ApparentDensity = 0.63; // Use 1 if the density refers to loose material aready
 // This figure refers to loose spheres of lead
@@ -75,30 +76,39 @@ module ScrewPosition() {
   }
 }
 
-module Cup() {
-  difference() {
-    union() {
-      MainBody();
-      ScrewPosition()
-          cylinder(h = Height - WallThickness,
-                   d = ScrewDiamenter + 2 * WallThickness, center = false);
+module CupLid(Lid = false) {
+  rotate(Lid ? [ 180, 0, 0 ] : [ 0, 0, 0 ])
+      translate(v = [ 0, 0, (Lid ? -Height : 0) ])
+
+          difference() {
+    if (Lid) {
+      translate(v = [ 0, 0, Height - WallThickness ]) {
+        cylinder(h = WallThickness,
+                 r = CoreInnerRadius + CoreWidth + WallThickness,
+                 center = false);
+        translate(v = [ 0, 0, -Inlid ]) difference() {
+          cylinder(h = Inlid, r = CoreInnerRadius + CoreWidth - Gap,
+                   center = false);
+          translate(v = [ 0, 0, -.5 ]) {
+            cylinder(h = Inlid + 1, r = CoreInnerRadius + Gap, center = false);
+            ScrewPosition() cylinder(
+                h = Inlid + 1, d = ScrewDiamenter + 2 * WallThickness + 2 * Gap,
+                center = false);
+          }
+        }
+      }
+    } else {
+      union() {
+        MainBody();
+        ScrewPosition()
+            cylinder(h = Height - WallThickness,
+                     d = ScrewDiamenter + 2 * WallThickness, center = false);
+      }
     }
-    ScrewPosition() cylinder(h = Height - WallThickness + 1, d = ScrewDiamenter,
-                             center = false);
+    ScrewPosition()
+        cylinder(h = Height + 1, d = ScrewDiamenter, center = false);
     BottleThread(d = InternalDiameter, h = Height);
   }
 }
 
-module Lid() {
-  difference() {
-    translate(v = [ 0, 0, Height - WallThickness ]) cylinder(
-        h = WallThickness, r = CoreInnerRadius + CoreWidth + WallThickness,
-        center = false);
-    ScrewPosition() cylinder(h = Height + WallThickness + 1, d = ScrewDiamenter,
-                             center = false);
-    BottleThread(d = InternalDiameter, h = Height);
-  }
-}
-
-// Cup();
-Lid();
+CupLid(Lid = true);

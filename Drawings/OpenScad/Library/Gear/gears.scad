@@ -370,7 +370,9 @@ module ring_gear(modul, tooth_number, width, rim_width, pressure_angle = 20, hel
     c = modul / 6;                                                  // Tip Clearance
     da = (modul <1)? d + (modul+c) * 2.2 : d + (modul+c) * 2;       // Tip Diameter
     ra = da / 2;                                                    // Tip Circle Radius
-    df = d - 2 * modul * ha;                                        // Root Circle Diameter
+    //df = d - 2 * modul * ha;                                        // Root Circle Diameter
+	//Modified by Eduardo Foltran 2023-03-19
+	df = d - 2 * modul; 
     rf = df / 2;                                                    // Root Radius
     rho_ra = acos(rb/ra);                                           // Maximum Involute Angle;
                                                                     // Involute begins on the Base Circle and ends at the Tip Circle

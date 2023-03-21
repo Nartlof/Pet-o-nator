@@ -76,11 +76,6 @@ SpoolWidth = SpoolUsefulWidth + 2 * PartsMinThickness;
 // Estabelece o diâmetro esterno da defença do carretel
 SpoolFenseDiameter = SpoolExternalDiameter + 2 * SpoolUsefulHeight;
 
-// Altura do hub central
-HubBaseHeigth = 2 * PartsMinThickness;
-HubHeigth = SpoolWidth + HubBaseHeigth;
-echo("Altura do hub=", HubHeigth);
-
 /*************************************************
  *             Definição das engrenagens
  * Usando o formulário disponível em:
@@ -93,9 +88,9 @@ echo("Altura do hub=", HubHeigth);
  * Restrições:
  * 1-A engrenagem sol deve ter um diametro tal que comporte
  *   o eixo do mecanismo passando por ela
- * 2-A engrenagem planeta deve ter um diâmetro máximo tal que seu centro
- *   fique dentro do diâmetro do hub
- * 3-Serão usadas 3 engrenagens planeta
+ * 2-A engrenagem planeta deve ter um diâmetro mínimo tal que seu centro
+ *   fique fora do diâmetro do hub para permitir montagem, mas deve ser o menor
+ *possível. 3-Serão usadas 3 engrenagens planeta
  **************************************************/
 
 // O furo central da engrenagem sol deve ser tal a passar com bastante folga
@@ -109,9 +104,9 @@ SunGearBore = M8SwcreewDiameter + 4 * Gap;
 Za = ceil((SunGearBore + 2 * PartsMinThickness + 2.5 * PlanetaryGearModulus) /
           PlanetaryGearModulus);
 
-// (E)stimando o número máximo de dentes da engrenagem planeta
-ZbE = floor(((SpoolInternalDiameter - Za * PlanetaryGearModulus)) /
-            PlanetaryGearModulus);
+// (E)stimando o número mínimo de dentes da engrenagem planeta
+ZbE = ceil(((SpoolExternalDiameter - Za * PlanetaryGearModulus)) /
+           PlanetaryGearModulus);
 
 // (E)stimando o número de dentes da engrenagem anel
 ZcE = 2 * ZbE + Za;
@@ -138,9 +133,9 @@ DZc = Zc * PlanetaryGearModulus;
 // Função recursiva para encontrar o número de dentes da engrenagem anel
 function FindZc(Zc0, Za0) = ((((Zc0 - Za0) % 2 == 0) &&
                               ((Zc0 + Za0) % NumberOfPlanets == 0)) ||
-                             (Zc0 == 0))
+                             (Zc0 > 1000))
                                 ? Zc0
-                                : FindZc(Zc0 - 1, Za0);
+                                : FindZc(Zc0 + 1, Za0);
 
 /***************************************
  *Módulos de posicionamento
@@ -166,7 +161,7 @@ module GearSpacer(bore = 3, gap = Gap) {
 }
 
 module SunGear() {
-  rotate([ 0, 0, 180 / Za ])
+  rotate([ 0, 0, 0 ])
       spur_gear(modul = PlanetaryGearModulus, tooth_number = Za,
                 width = PlanetaryGearThickness, bore = SunGearBore,
                 pressure_angle = 20, helix_angle = 0, optimized = false);
@@ -191,16 +186,34 @@ module RingGear() {
 /***************************************
  *Módulos de partes complexas
  ****************************************/
+module CarrierBasePlate(h = PartsMinThickness) {
+  difference() {
+    cylinder(h = h,
+             r = (DZa + DZb + IntermidiateGearAxis) / 2 + 2 * PartsMinThickness,
+             center = false);
+    // Furos dos eixos das engrenagens planetas
+    translate(v = [ 0, 0, -.5 ]) PositionPlanetGear()
+        cylinder(h = h + 1, d = IntermidiateGearAxis);
+  }
+}
+
+// Modulo com partes para alinhar as duas metades do carrier
+module CarrierLock(gap = Gap) {
+  rotate([ 0, 0, 180 / NumberOfPlanets ])
+      translate(v = [ 0, 0, -InterGearGap / 2 ]) PositionPlanetGear()
+          translate(v = [ PartsMinThickness, 0, 0 ])
+              cylinder(h = PartsMinThickness + InterGearGap,
+                       d = 2 * PartsMinThickness + gap);
+}
 
 module LowerCarrier() {
+  PlateThickness = PartsMinThickness + InterGearGap + PlanetaryGearThickness;
   difference() {
     // Base da peça
     union() {
       difference() {
-        cylinder(h = PartsMinThickness + InterGearGap + PlanetaryGearThickness,
-                 r = (DZa + DZb + IntermidiateGearAxis) / 2 +
-                     2 * PartsMinThickness,
-                 center = false);
+        CarrierBasePlate(h = PlateThickness);
+        // Abertura das engrenagens planetas
         translate(v = [ 0, 0, PartsMinThickness ]) PositionPlanetGear()
             cylinder(h = PlanetaryGearThickness + InterGearGap + 1,
                      d = DZb + 2 * PlanetaryGearModulus + 4 * Gap + 2);
@@ -208,14 +221,20 @@ module LowerCarrier() {
       // Espaçadores das engrenagens
       translate(v = [ 0, 0, PartsMinThickness ]) PositionPlanetGear()
           GearSpacer(bore = IntermidiateGearAxis);
+      // Pinos de alinhamento
+      translate(v = [ 0, 0, PlateThickness ]) CarrierLock(gap = -Gap);
     }
-    // Furos dos eixos
-    translate(v = [ 0, 0, -.5 ]) PositionPlanetGear()
-        cylinder(h = PartsMinThickness + 1, d = IntermidiateGearAxis);
     // Furo da engrenagem sol
     translate(v = [ 0, 0, -.5 ]) cylinder(
         h = PartsMinThickness + PlanetaryGearThickness + InterGearGap + 1,
         d = DZa + 2 * PlanetaryGearModulus + 4 * Gap);
+  }
+}
+
+module UpperCarrierBasePlate(h = PartsMinThickness) {
+  difference() {
+    CarrierBasePlate(h = h);
+    CarrierLock(gap = Gap);
   }
 }
 
@@ -225,10 +244,7 @@ module UpperCarrier() {
     // Base da peça
     union() {
       // Placa base
-      cylinder(h = PartsMinThickness,
-               r = (DZa + DZb + IntermidiateGearAxis) / 2 +
-                   2 * PartsMinThickness,
-               center = false);
+      UpperCarrierBasePlate(h = PartsMinThickness);
       // Stand da engrenagem sol
       cylinder(h = 2 * PartsMinThickness + 1.5 * InterGearGap,
                d = DZa + 2 * PlanetaryGearModulus, center = false);
@@ -239,11 +255,8 @@ module UpperCarrier() {
     }
     // Furo do eixo principal
     translate(v = [ 0, 0, -.5 ])
-        cylinder(h = 2 * PartsMinThickness + InterGearGap + 1, d = SunGearBore,
-                 center = false);
-    // Furos dos eixos das engrenagens planetas
-    translate(v = [ 0, 0, -.5 ]) PositionPlanetGear()
-        cylinder(h = PartsMinThickness + 1, d = IntermidiateGearAxis);
+        cylinder(h = 2 * PartsMinThickness + 1.5 * InterGearGap + 1,
+                 d = SunGearBore, center = false);
   }
   // Engrenagem sol
   translate(v = [ 0, 0, 2 * PartsMinThickness + 1.5 * InterGearGap ]) SunGear();
@@ -328,105 +341,119 @@ module Spool(FenseOnly = false) {
   }
 }
 
-// Peça principal que suporta o carretel e a engrenagem primária
+// Peça principal que suporta o carretel
 module Hub() {
-  translate([ 0, 0, HubHeigth / 2 + PartsMinThickness ]) {
+  // Altura do hub central
+  HubBaseHeigth = PartsMinThickness;
+  HubHeigth = SpoolWidth + HubBaseHeigth;
+  FittingChanferHeight = PartsMinThickness / 2;
+  union() {
     difference() {
       union() {
         // Corpo da peça
         difference() {
-          union() {
-            // Chanfro de encaixe
-            translate([ 0, 0, SpoolWidth / 2 - PartsMinThickness ])
+          // A altura total do encaixe é igual à largura do carretel
+          // para que nada saia para fora
 
-                cylinder(d1 = SpoolInternalDiameter - 2 * Gap,
-                         d2 = SpoolInternalDiameter - PartsMinThickness,
-                         h = PartsMinThickness);
-            // Cilindro central
-            translate([ 0, 0, -PartsMinThickness / 2 ])
-                cylinder(d = SpoolInternalDiameter - 2 * Gap,
-                         h = SpoolWidth - PartsMinThickness, center = true);
+          union() {
+            translate(v = [ 0, 0, HubBaseHeigth ]) {
+              // Chanfro de encaixe
+              translate([ 0, 0, SpoolWidth - FittingChanferHeight ])
+                  cylinder(d1 = SpoolInternalDiameter - 2 * Gap,
+                           d2 = SpoolInternalDiameter - FittingChanferHeight,
+                           h = FittingChanferHeight);
+              // Cilindro central
+
+              cylinder(d = SpoolInternalDiameter - 2 * Gap,
+                       h = SpoolWidth - FittingChanferHeight);
+            }
             // Base
-            translate([ 0, 0, -SpoolWidth / 2 - HubBaseHeigth ])
-                cylinder(d = SpoolInternalDiameter + 3 * PartsMinThickness,
-                         h = HubBaseHeigth, center = false);
+            cylinder(d = SpoolInternalDiameter + 3 * PartsMinThickness,
+                     h = HubBaseHeigth, center = false);
           }
           // Furo central
-          translate([ 0, 0, .5 ])
+          translate(v = [ 0, 0, -.5 ])
               cylinder(d = SpoolInternalDiameter - 2 * PartsMinThickness,
-                       h = SpoolWidth + 1, center = true);
-          // Furo da base com espaço para encaixe dos eixos das engrenagens
-          // planeta
-          translate([ 0, 0, -SpoolWidth / 2 - HubBaseHeigth - .5 ]) {
-            cylinder(r = (DZa + DZb) / 2 - PartsMinThickness -
-                         IntermidiateGearAxis / 2,
-                     h = HubBaseHeigth + 1);
-            // Furos dos eixos das engrenagens planetas
-            PositionPlanetGear()
-                cylinder(d = IntermidiateGearAxis, h = HubBaseHeigth + 1);
-          }
+                       h = HubHeigth + 1);
         }
         // Aletas de fixação
         for (i = [0:3]) {
           rotate([ 0, 0, i * 45 ]) {
             // Aletas principais de encaixe
-            translate([ 0, 0, -HubBaseHeigth / 2 - PartsMinThickness ]) cube(
-                [
-                  SpoolInternalDiameter + 2 * (PartsMinThickness - Gap),
-                  PartsMinThickness - Gap, HubHeigth - 2 *
-                  PartsMinThickness
-                ],
-                center = true);
+            translate([ 0, 0, (HubHeigth - 2 * FittingChanferHeight) / 2 ])
+                cube(
+                    [
+                      SpoolInternalDiameter + 2 * (PartsMinThickness - Gap),
+                      PartsMinThickness - Gap, HubHeigth - 2 *
+                      FittingChanferHeight
+                    ],
+                    center = true);
             // Aletas internas de suporte
-            translate([ 0, 0, SpoolWidth / 2 - PartsMinThickness ]) cube(
+            translate([ 0, 0, HubHeigth - FittingChanferHeight ]) cube(
                 [
                   SpoolInternalDiameter - PartsMinThickness - Gap,
                   PartsMinThickness - Gap, 2 *
-                  PartsMinThickness
+                  FittingChanferHeight
                 ],
                 center = true);
             // Chanfros de encaixe
             for (i = [ 0, 1 ]) {
               rotate([ 0, 0, i * 180 ]) translate([
-                (SpoolInternalDiameter - Gap) / 2, 0, (SpoolWidth) / 2 - 2 *
-                PartsMinThickness
+                (SpoolInternalDiameter - Gap) / 2, 0, HubHeigth - 2 *
+                FittingChanferHeight
               ])
                   scale([
                     (2 * PartsMinThickness - Gap) / (PartsMinThickness - Gap),
                     1, 1
                   ]) rotate([ 0, 0, 45 ])
                       cylinder(d1 = sqrt(2) * (PartsMinThickness - Gap), d2 = 0,
-                               h = PartsMinThickness, $fn = 4);
+                               h = FittingChanferHeight, $fn = 4);
             }
           }
         }
         // Eixo central
-        translate([ 0, 0, -PartsMinThickness ])
-            cylinder(d = Bearing608ExternalDiamenter + 2 * PartsMinThickness,
-                     h = HubHeigth, center = true);
+        cylinder(d = Bearing608ExternalDiamenter + 2 * PartsMinThickness,
+                 h = HubHeigth);
       }
       // Furo do eixo central
-      cylinder(d = Bearing608MeanDiamenter + 2 * Gap, h = HubHeigth + 1,
-               center = true);
+      translate([ 0, 0, -.5 ])
+          cylinder(d = Bearing608MeanDiamenter + 2 * Gap, h = HubHeigth + 1);
       // Furos para os rolamentos
-      translate([ 0, 0, -SpoolWidth / 2 - HubBaseHeigth - 1 ]) cylinder(
+      translate([ 0, 0, -1 ]) cylinder(
           d = Bearing608ExternalDiamenter + 2 * Gap, h = Bearing608Width + 1);
       // O furo para o rolamento superior deve conter a cabeça do parafuso
       // usado como eixo
-      translate([ 0, 0, HubHeigth / 2 - Bearing608Width - M8SwcreewHeadWidth ])
+      translate([ 0, 0, HubHeigth - Bearing608Width - M8SwcreewHeadWidth ])
           cylinder(d = Bearing608ExternalDiamenter + 2 * Gap,
                    h = Bearing608Width + M8SwcreewHeadWidth + 1);
     }
   }
 }
 
-// translate(v = [ 0, 0, PlanetaryGearThickness ]) Hub();
+// Hub da caixa de redução
+module MotorHub() {
+  union() {
+    translate(v = [ 0, 0, PartsMinThickness ]) Hub();
+    difference() {
+      UpperCarrierBasePlate(h = PartsMinThickness);
+      translate(v = [ 0, 0, -.5 ])
+          cylinder(h = Bearing608Width + 1,
+                   d = Bearing608ExternalDiamenter + 2 * Gap, center = false);
+    }
+  }
+}
+
+// translate(v = [
+//   0, 0, PlanetaryGearThickness + 2 * PartsMinThickness + 2 * InterGearGap
+//])
+// MotorHub();
 // RingGear();
 
-translate([ 0, 0, -PartsMinThickness - InterGearGap ]) UpperCarrier();
+// translate([ 0, 0, -PartsMinThickness - InterGearGap ]) color("blue")
+// UpperCarrier();
 translate(
-    v = [ 0, 0, PartsMinThickness + PlanetaryGearThickness + InterGearGap ]) %
+    v = [ 0, 0, PartsMinThickness + PlanetaryGearThickness + InterGearGap ])
     UpperCarrier();
 LowerCarrier();
-translate(v = [ 0, 0, PartsMinThickness + InterGearGap / 2 ])
-    PositionPlanetGear() PlanetGear();
+// translate(v = [ 0, 0, PartsMinThickness + InterGearGap / 2 ])
+//    PositionPlanetGear() PlanetGear();

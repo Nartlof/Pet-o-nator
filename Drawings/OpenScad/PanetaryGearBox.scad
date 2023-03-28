@@ -61,6 +61,14 @@ M8SwcreewNutWidth = 6.4;
 M8SwcreewNutDiameter = 14.6;
 M8SwcreewDiameter = 7.8;
 
+// Dimensões do parafuso auto-tarrachante usado na montagem da caixa de redução
+// Folga inclusa na dimensão
+FixingScrewHeadDiamenter = 4.5;
+FixingScrewHeadHeight = 1.8;
+FixingScrewPassThruDiamenter = 2.5;
+FixingScrewScrewingDiamenter = 2;
+CarrierLockHeight = PartsMinThickness / 6;
+
 // Calculando as dimensões vinculadas às pre estabelecidas
 
 // Diametro esterno do centro do carretel
@@ -87,25 +95,28 @@ SpoolFenseDiameter = SpoolExternalDiameter + 2 * SpoolUsefulHeight;
  *
  * Restrições:
  * 1-A engrenagem sol deve ter um diametro tal que comporte
- *   o eixo do mecanismo passando por ela
+ *   o eixo do mecanismo passando por ela e o tubo de sustentação
  * 2-A engrenagem planeta deve ter um diâmetro mínimo tal que seu centro
- *   fique fora do diâmetro do hub para permitir montagem, mas deve ser o menor
- *possível. 3-Serão usadas 3 engrenagens planeta
+ *   fique fora do diâmetro do hub para permitir montagem,
+ *   mas deve ser o menor possível.
+ * 3-Serão usadas 3 engrenagens planeta
  **************************************************/
 
 // O furo central da engrenagem sol deve ser tal a passar com bastante folga
 // pelo parafuso-eixo
-SunGearBore = M8SwcreewDiameter + 4 * Gap;
+SunGearBore = M8SwcreewDiameter + 4 * Gap + 2 * PartsMinThickness;
 
 // Estabelecendo o número mínimo de dentes da engrenagem sol
 // O diametro da raiz dos dentes de uma engrenagem é D-2.5*M
 // O número de dentes é calculado de modo a espessura minima seja
-// respeitada.
+// respeitada. Deve haver espaço no centro da engrenagem para o tubo de
+// sustentação do conjunto
 Za = ceil((SunGearBore + 2 * PartsMinThickness + 2.5 * PlanetaryGearModulus) /
           PlanetaryGearModulus);
 
 // (E)stimando o número mínimo de dentes da engrenagem planeta
-ZbE = ceil(((SpoolExternalDiameter - Za * PlanetaryGearModulus)) /
+ZbE = ceil(((SpoolExternalDiameter + 2 * PartsMinThickness -
+             Za * PlanetaryGearModulus)) /
            PlanetaryGearModulus);
 
 // (E)stimando o número de dentes da engrenagem anel
@@ -142,9 +153,18 @@ function FindZc(Zc0, Za0) = ((((Zc0 - Za0) % 2 == 0) &&
  ****************************************/
 
 module PositionPlanetGear() {
+  Angle = 360 / NumberOfPlanets;
   for (i = [0:NumberOfPlanets]) {
-    rotate([ 0, 0, i * 360 / NumberOfPlanets ])
-        translate([ (DZa + DZb) / 2, 0, 0 ]) children();
+    rotate([ 0, 0, i * Angle ]) translate([ (DZa + DZb) / 2, 0, 0 ]) children();
+  }
+}
+
+module PositionLookScrews() {
+  Angle = 360 / NumberOfPlanets;
+  HalfAngle = Angle / 2;
+  for (i = [0:NumberOfPlanets]) {
+    rotate([ 0, 0, i * Angle + HalfAngle ])
+        translate([ (DZa + DZb) / 2 + PartsMinThickness, 0, 0 ]) children();
   }
 }
 
@@ -194,16 +214,33 @@ module CarrierBasePlate(h = PartsMinThickness) {
     // Furos dos eixos das engrenagens planetas
     translate(v = [ 0, 0, -.5 ]) PositionPlanetGear()
         cylinder(h = h + 1, d = IntermidiateGearAxis);
+    // Furos para os parafusos
+    CarrierLockScrew(head = false, lenght = h);
   }
 }
 
-// Modulo com partes para alinhar as duas metades do carrier
-module CarrierLock(gap = Gap) {
-  rotate([ 0, 0, 180 / NumberOfPlanets ])
-      translate(v = [ 0, 0, -InterGearGap / 2 ]) PositionPlanetGear()
-          translate(v = [ PartsMinThickness, 0, 0 ])
-              cylinder(h = PartsMinThickness + InterGearGap,
-                       d = 2 * PartsMinThickness + gap);
+module CarrierLock(h = CarrierLockHeight) {
+  // A altura da trava se refere a metade da diagonal de um quadrado.
+  // Calculando o lado do quadrado:
+  Side = sqrt(2) * h;
+  PositionLookScrews() rotate_extrude(angle = 360, convexity = 2)
+      translate(v = [ FixingScrewHeadDiamenter / 2 + h, 0, 0 ])
+          rotate([ 0, 0, 45 ]) square(Side, center = true);
+}
+
+// Modulo o buraco do parafuso de fixação
+module CarrierLockScrew(head = true, lenght = 3) {
+  PositionLookScrews() union() {
+    if (head) {
+      translate(v = [ 0, 0, -.5 ]) cylinder(
+          h = lenght, d = FixingScrewPassThruDiamenter + 1, center = false);
+      translate(v = [ 0, 0, lenght - FixingScrewHeadHeight ])
+          cylinder(h = FixingScrewHeadHeight + 1, d = FixingScrewHeadDiamenter);
+    } else {
+      translate(v = [ 0, 0, -.5 ]) cylinder(
+          h = lenght + 1, d = FixingScrewScrewingDiamenter, center = false);
+    }
+  }
 }
 
 module LowerCarrier() {
@@ -221,8 +258,9 @@ module LowerCarrier() {
       // Espaçadores das engrenagens
       translate(v = [ 0, 0, PartsMinThickness ]) PositionPlanetGear()
           GearSpacer(bore = IntermidiateGearAxis);
-      // Pinos de alinhamento
-      translate(v = [ 0, 0, PlateThickness ]) CarrierLock(gap = -Gap);
+      // Travas de alinhamento
+      translate(v = [ 0, 0, PlateThickness ])
+          CarrierLock(h = CarrierLockHeight);
     }
     // Furo da engrenagem sol
     translate(v = [ 0, 0, -.5 ]) cylinder(
@@ -234,7 +272,8 @@ module LowerCarrier() {
 module UpperCarrierBasePlate(h = PartsMinThickness) {
   difference() {
     CarrierBasePlate(h = h);
-    CarrierLock(gap = Gap);
+    CarrierLock(h = CarrierLockHeight);
+    CarrierLockScrew(head = true, lenght = h);
   }
 }
 
@@ -443,17 +482,18 @@ module MotorHub() {
   }
 }
 
-// translate(v = [
-//   0, 0, PlanetaryGearThickness + 2 * PartsMinThickness + 2 * InterGearGap
-//])
+// translate(v = [  0, 0, PlanetaryGearThickness + PartsMinThickness + 2 *
+// InterGearGap])
 // MotorHub();
 // RingGear();
 
-// translate([ 0, 0, -PartsMinThickness - InterGearGap ]) color("blue")
-// UpperCarrier();
+translate([ 0, 0, -PartsMinThickness - InterGearGap ]) color("blue")
+    UpperCarrier();
 translate(
     v = [ 0, 0, PartsMinThickness + PlanetaryGearThickness + InterGearGap ])
     UpperCarrier();
 LowerCarrier();
-// translate(v = [ 0, 0, PartsMinThickness + InterGearGap / 2 ])
-//    PositionPlanetGear() PlanetGear();
+translate(v = [ 0, 0, PartsMinThickness + InterGearGap / 2 ])
+    PositionPlanetGear() PlanetGear();
+
+// CarrierLock(h = PartsMinThickness / 3);

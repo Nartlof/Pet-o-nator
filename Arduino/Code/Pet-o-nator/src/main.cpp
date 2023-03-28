@@ -17,6 +17,9 @@ void setup()
     {
         keyboard.addPin(keyPins[i]);
     }
+    // Setting up plastic sensor
+    hasHadPlastic = false;
+    pinMode(PlasticSensorPin, INPUT_PULLUP);
     display.initialize();
     // Serial.println(F("Lendo o teclado"));
 }
@@ -32,6 +35,13 @@ void loop()
     display.setTargetSpeed(motor.getSpeed());
     display.setStarted(hotEnd.isStarted() || motor.isStarted());
     display.update();
+    if (!hasPlastic() && hasHadPlastic)
+    {
+        hotEnd.stop();
+        motor.stop();
+    }
+    if (hasPlastic() && !hasHadPlastic)
+        hasHadPlastic = true;
 }
 
 void treatKeybord()
@@ -119,8 +129,12 @@ void treatKeyPressed(uint8_t key, bool repeat)
         motor.decSpeed();
         break;
     case startButton:
-        motor.start();
-        hotEnd.start();
+        if (hasPlastic() || !hasHadPlastic)
+        {
+            motor.start();
+            hotEnd.start();
+            hasHadPlastic = hasPlastic();
+        }
         break;
     case stopButton:
         motor.stop();
@@ -132,4 +146,9 @@ void treatKeyPressed(uint8_t key, bool repeat)
     default:
         break;
     }
+}
+
+bool hasPlastic()
+{
+    return digitalRead(PlasticSensorPin) == LOW;
 }

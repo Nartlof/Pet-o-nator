@@ -17,3 +17,5 @@ Motor motor(MotorPwmPin, MotorFeedbackPin, MotorSpeedToRpm,
 
 void treatKeybord(void);
 void treatKeyPressed(uint8_t key, bool repeat);
+bool hasPlastic();
+bool hasHadPlastic;

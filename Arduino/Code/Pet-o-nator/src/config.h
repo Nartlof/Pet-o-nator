@@ -43,3 +43,6 @@
 
 // Configuring Display
 #define DisplayRefreshTime 128UL // The amount of time between two refreshes
+
+// Configuring plastic sensor
+#define PlasticSensorPin 4

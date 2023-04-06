@@ -20,8 +20,12 @@ FirstGearModulus = 2;
 PlanetaryGearModulus = 1;
 PlanetaryGearThickness = 2 * PartsMinThickness;
 NumberOfPlanets = 3;
+NumberOfCarries = 4;
 IRSensorDiameter = 5;
 MdfThickness = 9; // Espessura do MDF usado no gabinete do Pet-o-nator
+CaseFixingScrewDiamenter = 3;
+CaseFixingScrewHeadDiamenter = 6;
+CaseFixingScrewHeadResses = 1;
 
 // Parafuso M8 usado como eixo do carretel
 ScrewAxisLength = 100;
@@ -43,10 +47,6 @@ Gap = .25;
 $fa = ($preview) ? $fa : 1;
 $fs = ($preview) ? $fs : .2;
 
-// A direção da engrenagem determina o angulo da hélice
-Outwards = 1;
-Inwards = -1;
-
 // Dimensões do rolamento 608
 Bearing608ExternalDiamenter = 22;
 Bearing608InternalDiamenter = 8;
@@ -67,7 +67,11 @@ FixingScrewHeadDiamenter = 4.5;
 FixingScrewHeadHeight = 1.8;
 FixingScrewPassThruDiamenter = 2.5;
 FixingScrewScrewingDiamenter = 2;
+// Altura da trava de alinhamento do carrier
 CarrierLockHeight = PartsMinThickness / 6;
+// Altura do carrier
+CarrierHeight =
+    PlanetaryGearThickness + 1.5 * InterGearGap + 2 * PartsMinThickness;
 
 // Calculando as dimensões vinculadas às pre estabelecidas
 
@@ -199,8 +203,9 @@ module PlanetGear() {
 
 module RingGear() {
   ring_gear(modul = PlanetaryGearModulus, tooth_number = Zc,
-            width = PlanetaryGearThickness, rim_width = PartsMinThickness,
-            pressure_angle = 20, helix_angle = 0);
+            width = NumberOfCarries * CarrierHeight,
+            rim_width = PartsMinThickness, pressure_angle = 20,
+            helix_angle = 0);
 }
 
 /***************************************
@@ -288,9 +293,8 @@ module UpperCarrier() {
       cylinder(h = 2 * PartsMinThickness + 1.5 * InterGearGap,
                d = DZa + 2 * PlanetaryGearModulus, center = false);
       // Espaçador entre os estágios
-      cylinder(h = PartsMinThickness + InterGearGap,
-               d = DZa + 2 * (PlanetaryGearModulus + PartsMinThickness),
-               center = false);
+      translate(v = [ 0, 0, PartsMinThickness ]) GearSpacer(
+          bore = DZa + 2 * (PlanetaryGearModulus + PartsMinThickness), gap = 0);
     }
     // Furo do eixo principal
     translate(v = [ 0, 0, -.5 ])
@@ -383,7 +387,7 @@ module Spool(FenseOnly = false) {
 // Peça principal que suporta o carretel
 module Hub() {
   // Altura do hub central
-  HubBaseHeigth = PartsMinThickness;
+  HubBaseHeigth = 2 * PartsMinThickness;
   HubHeigth = SpoolWidth + HubBaseHeigth;
   FittingChanferHeight = PartsMinThickness / 2;
   union() {
@@ -482,18 +486,79 @@ module MotorHub() {
   }
 }
 
+// Carcaça da caixa de redução
+module GearBoxCase() {
+  NumberOfScrews = 6;
+  CaseHeight = 4 * CarrierHeight;
+  CaseDiameter = ceil((Zc + 4) * PlanetaryGearModulus + 2 * PartsMinThickness);
+  CaseFlangeWidth = CaseFixingScrewHeadDiamenter + 2 * PartsMinThickness;
+  HubHole = SpoolInternalDiameter + 4 * PartsMinThickness;
+  echo("CaseDiameter=", CaseDiameter);
+  // Parede lateral
+  difference() {
+    cylinder(h = CaseHeight, d1 = CaseDiameter,
+             d2 = CaseDiameter + 2 + PartsMinThickness, center = false);
+    translate(v = [ 0, 0, -.5 ])
+        cylinder(h = CaseHeight + 1, d = CaseDiameter - 2 * PartsMinThickness,
+                 center = false);
+  }
+  // Flange e tampo
+  translate(v = [ 0, 0, CaseHeight ]) difference() {
+    // Parte principal com chanfro
+    union() {
+      translate(v = [ 0, 0, PartsMinThickness / 2 ]) cylinder(
+          h = PartsMinThickness / 2, d1 = CaseDiameter + 2 * CaseFlangeWidth,
+          d2 = CaseDiameter + 2 * CaseFlangeWidth - PartsMinThickness,
+          center = false);
+      cylinder(h = PartsMinThickness / 2,
+               d = CaseDiameter + 2 * CaseFlangeWidth, center = false);
+      // Espaçador
+      translate(v = [ 0, 0, -InterGearGap / 2 ])
+          GearSpacer(bore = HubHole, gap = 0);
+    }
+    // Furo do hub
+    translate(v = [ 0, 0, -.5 - InterGearGap ]) cylinder(
+        h = PartsMinThickness + InterGearGap + 1, d = HubHole, center = false);
+    // Parafusos de fixação
+
+    for (i = [0:NumberOfScrews - 1]) {
+      rotate([ 0, 0, i * 360 / NumberOfScrews ])
+          translate(v = [ (CaseDiameter + CaseFlangeWidth) / 2, 0, 0 ]) {
+        translate([ 0, 0, PartsMinThickness - CaseFixingScrewHeadResses ])
+            cylinder(h = CaseFixingScrewHeadResses + 1,
+                     d = CaseFixingScrewHeadDiamenter);
+        translate(v = [ 0, 0, -.5 ])
+            cylinder(h = PartsMinThickness + 1, d = CaseFixingScrewDiamenter,
+                     center = false);
+      }
+    }
+  }
+  RingGear();
+}
+
 // translate(v = [  0, 0, PlanetaryGearThickness + PartsMinThickness + 2 *
 // InterGearGap])
 // MotorHub();
 // RingGear();
+/*
+// translate([ 0, 0, -PartsMinThickness - InterGearGap ]) color("blue")
+//     UpperCarrier();
+for (i = [1:NumberOfCarries])
+  translate(v = [ 0, 0, (i - 1) * CarrierHeight ]) {
+    if (i != NumberOfCarries) {
+      translate(v = [
+        0, 0, PartsMinThickness + PlanetaryGearThickness +
+        InterGearGap
+      ]) UpperCarrier();
+    }
+    LowerCarrier();
+    translate(v = [ 0, 0, PartsMinThickness + InterGearGap / 2 ])
+        PositionPlanetGear() PlanetGear();
+  }
+//% RingGear();
+translate(v = [
+  0, 0, 4 * CarrierHeight - PartsMinThickness - InterGearGap / 2
+]) MotorHub();
+// CarrierLock(h = PartsMinThickness / 3);*/
 
-translate([ 0, 0, -PartsMinThickness - InterGearGap ]) color("blue")
-    UpperCarrier();
-translate(
-    v = [ 0, 0, PartsMinThickness + PlanetaryGearThickness + InterGearGap ])
-    UpperCarrier();
-LowerCarrier();
-translate(v = [ 0, 0, PartsMinThickness + InterGearGap / 2 ])
-    PositionPlanetGear() PlanetGear();
-
-// CarrierLock(h = PartsMinThickness / 3);
+GearBoxCase();

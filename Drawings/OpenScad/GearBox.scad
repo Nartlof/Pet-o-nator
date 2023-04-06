@@ -16,7 +16,7 @@ IntermidiateGearAxis = 4;
 IntermidiateGearBushing = 6.35;
 IntermidiateGearThickness = 10;
 InterGearGap = 1;
-FirstGearModulus = 2;
+FirstGearModulus = 1;
 IRSensorDiameter = 5;
 
 NozzleHeight = 35;
@@ -477,12 +477,12 @@ module Spacer(dIn = 10, dOut = 4, h = 1) {
 }
 
 // rotate([90,0,0]) Assembly();
-// SpoolGear();
+SpoolGear();
 // SecondGear();
 // ThirdGear();
 // FourthGear();
 // ExitGear();
-MotorGear();
+// MotorGear();
 
 // Espaçador para a engrenagem primária
 // Spacer(dIn=M8SwcreewDiameter+4*Gap, dOut = Bearing608MeanDiamenter - 2*Gap,

@@ -4,6 +4,14 @@
 #include <Display.h>
 #include <HotEnd.h>
 #include <Motor.h>
+#include <EEPROM.h>
+
+struct PreSet
+{
+    float temp;
+    float speed;
+    uint8_t check;
+};
 
 CharlieKey keyboard(keboardBits);
 
@@ -19,3 +27,4 @@ void treatKeybord(void);
 void treatKeyPressed(uint8_t key, bool repeat);
 bool hasPlastic();
 bool hasHadPlastic;
+PreSet preSet;

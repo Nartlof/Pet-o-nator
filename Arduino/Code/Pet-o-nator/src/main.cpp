@@ -1,7 +1,17 @@
 #include <main.h>
 
+
 void setup()
 {
+    //Checking if there is a valid preset
+    EEPROM.get(0, preSet);
+    if (preSet.check!=165){
+        preSet.check = 165;
+        preSet.temp = HotEndPreSetTemperature;
+        preSet.speed = MotorPreSetRpm;
+        EEPROM.put(0, preSet);
+    }
+
     //---------------------------------------------- Set PWM frequency for D9 & D10 ------------------------------
 
     TCCR1B = TCCR1B & (B11111000 | B00000001); // set timer 1 divisor to 1 for PWM frequency of 31372.55 Hz
@@ -108,29 +118,31 @@ void treatKeyPressed(uint8_t key, bool repeat)
 {
     switch (key)
     {
-    case preSetButton:
-        hotEnd.setTemperature(HotEndPreSetTemperature);
-        motor.setRPM(MotorPreSetRpm);
+    case savePreSetButton:
+        preSet.check = 165;
+        preSet.temp = hotEnd.getTemperature();
+        preSet.speed = motor.getRPM();
+        EEPROM.put(0, preSet);
         break;
-    case tempPreset:
-        hotEnd.setTemperature(HotEndPreSetTemperature);
+    case tempPresetButton:
+        hotEnd.setTemperature(preSet.temp);
         break;
-    case speedPreSet:
-        motor.setRPM(MotorPreSetRpm);
+    case speedPreSetButton:
+        motor.setRPM(preSet.speed);
         break;
-    case tempUp:
+    case tempUpButton:
         hotEnd.incTemp();
         break;
 
-    case tempDown:
+    case tempDownButton:
         hotEnd.decTemp();
         break;
 
-    case speedUp:
+    case speedUpButton:
         motor.incSpeed();
         break;
 
-    case speedDown:
+    case speedDownButton:
         motor.decSpeed();
         break;
     case startButton:

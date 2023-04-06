@@ -3,15 +3,15 @@
 #define keboardA0 11
 #define keboardA1 12
 #define keboardA2 13
-#define tempUp 1
-#define tempDown 2
-#define tempPreset 3
-#define speedUp 4
-#define speedDown 5
-#define speedPreSet 6
+#define tempUpButton 1
+#define tempDownButton 2
+#define tempPresetButton 3
+#define speedUpButton 4
+#define speedDownButton 5
+#define speedPreSetButton 6
 #define startButton 8
 #define stopButton 7
-#define preSetButton 9
+#define savePreSetButton 9
 
 // Configuring Motor
 #define MotorPwmPin 10

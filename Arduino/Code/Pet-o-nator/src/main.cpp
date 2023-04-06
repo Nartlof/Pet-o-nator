@@ -112,7 +112,12 @@ void treatKeyPressed(uint8_t key, bool repeat)
         hotEnd.setTemperature(HotEndPreSetTemperature);
         motor.setRPM(MotorPreSetRpm);
         break;
-
+    case tempPreset:
+        hotEnd.setTemperature(HotEndPreSetTemperature);
+        break;
+    case speedPreSet:
+        motor.setRPM(MotorPreSetRpm);
+        break;
     case tempUp:
         hotEnd.incTemp();
         break;
@@ -139,9 +144,6 @@ void treatKeyPressed(uint8_t key, bool repeat)
     case stopButton:
         motor.stop();
         hotEnd.stop();
-        break;
-    case 3:
-        digitalWrite(DD4, !digitalRead(DD4));
         break;
     default:
         break;

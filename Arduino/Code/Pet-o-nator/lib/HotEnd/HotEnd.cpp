@@ -28,6 +28,12 @@ HotEnd::~HotEnd()
 {
 }
 
+/*setTemperature()******************************************
+ *                                                          *
+ * Sets the target temperature for the hotend.              *
+ * Argument in Kelvin
+ *                                                          *
+ ************************************************************/
 void HotEnd::setTemperature(float Temperature)
 {
     if (Temperature <= MaxTemperature)
@@ -36,10 +42,15 @@ void HotEnd::setTemperature(float Temperature)
     }
     else
     {
-        targetTemperature = 0;
+        targetTemperature = zeroCinK;
     }
 }
 
+/*getTemperature()******************************************
+ *                                                          *
+ * Returns the target temperature for the hotend in Celsius *
+ *                                                          *
+ ************************************************************/
 float HotEnd::getTemperature()
 {
     return targetTemperature - zeroCinK;

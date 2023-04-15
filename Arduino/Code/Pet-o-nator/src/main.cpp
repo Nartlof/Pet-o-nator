@@ -1,11 +1,11 @@
 #include <main.h>
 
-
 void setup()
 {
-    //Checking if there is a valid preset
+    // Checking if there is a valid preset
     EEPROM.get(0, preSet);
-    if (preSet.check!=165){
+    if (preSet.check != 165)
+    {
         preSet.check = 165;
         preSet.temp = HotEndPreSetTemperature;
         preSet.speed = MotorPreSetRpm;
@@ -120,7 +120,7 @@ void treatKeyPressed(uint8_t key, bool repeat)
     {
     case savePreSetButton:
         preSet.check = 165;
-        preSet.temp = hotEnd.getTemperature();
+        preSet.temp = hotEnd.getTemperature() + hotEnd.zeroCinK;
         preSet.speed = motor.getRPM();
         EEPROM.put(0, preSet);
         break;

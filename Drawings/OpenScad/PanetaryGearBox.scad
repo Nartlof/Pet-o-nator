@@ -561,4 +561,7 @@ translate(v = [
 ]) MotorHub();
 // CarrierLock(h = PartsMinThickness / 3);*/
 
-GearBoxCase();
+// GearBoxCase();
+// PlanetGear();
+// UpperCarrier();
+LowerCarrier();

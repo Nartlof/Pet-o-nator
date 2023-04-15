@@ -24,13 +24,13 @@ private:
     float targetTemperature;
     float measuredTemperature;
     float pwmValue;
-    const float zeroCinK = 273.15;
     bool started;
     QuickPID hotEndPID;
     //  These are the figures to be used to calculate the temperature from the NTC reading
     const double ResistToTemp[4] = {7.06114140e-04, 2.69749565e-04, -6.99387329e-06, 3.01741645e-07};
 
 public:
+    const float zeroCinK = 273.15;
     HotEnd(uint8_t control, uint8_t ntcRead, uint8_t rSelection,
            float Kp, float Ki, float Kd, double R1, double R2);
     ~HotEnd();

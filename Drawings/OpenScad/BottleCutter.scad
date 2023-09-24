@@ -75,7 +75,8 @@ module block()
     // um lado igual à distância entre o centro dos rolamentos de conte e os
     // outros com lado igual à soma dos raios do rolamento e da arruela de apoio
     xScrewPosition = (BearingOuterDiameter - BearingOverlap) / 2;
-    ySupporScrew = sqrt(xScrewPosition ^ 2 + (BearingInternalDiamenter + SupportingWasherDiameterToUse) ^ 2 / 4);
+    ySupporScrew = sqrt((BearingOuterDiameter + SupportingWasherDiameterToUse) ^ 2 / 4 - xScrewPosition ^ 2);
+    echo(ySupporScrew);
 
     difference()
     {

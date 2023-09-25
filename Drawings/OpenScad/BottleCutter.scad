@@ -126,7 +126,7 @@ if (WhatToRender == "support")
 {
     difference()
     {
-        Heigth = MaxCutting + SupportingWasherHeigth + BearingHeight;
+        Heigth = MaxCutting + SupportingWasherHeigth;
         cylinder(h = Heigth, r = BearingOuterDiameter / 3);
         translate([ 0, 0, -.5 ]) cylinder(h = Heigth + 1, d = ScrewType + Gap);
     }

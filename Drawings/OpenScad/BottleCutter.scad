@@ -2,6 +2,7 @@
 This file is part of the Pet-o-Nator project
 Contant: Parts for the bottle cutter
 Autor: Carlos Eduardo Foltran
+
 update 2023-09-25
 update 2023-02-26
 */
@@ -125,7 +126,7 @@ if (WhatToRender == "support")
 {
     difference()
     {
-        Heigth = MaxCutting + SupportingWasherHeigth - BearingHeight;
+        Heigth = MaxCutting + SupportingWasherHeigth + BearingHeight;
         cylinder(h = Heigth, r = BearingOuterDiameter / 3);
         translate([ 0, 0, -.5 ]) cylinder(h = Heigth + 1, d = ScrewType + Gap);
     }

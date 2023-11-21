@@ -47,6 +47,7 @@ public:
     void start();     // turns the motor on
     void stop();      // turns the motor off
     bool isStarted(); // returns weather or not the motor is running
+    void setPid(float Kp, float Ki, float Kd); // Sets the constants for the PID
 };
 
 #endif

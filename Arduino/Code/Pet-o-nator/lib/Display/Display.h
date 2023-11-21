@@ -42,7 +42,7 @@ public:
     void setTargetTemperature(float temperature);
     void setMeasuredSpeed(float speed);
     void setMeasuredTemperature(float temperature);
-    void update(); // must be on the main loop
+    void update();               // must be on the main loop
     void setStarted(bool start); // Prints the "running" status on display
 };
 

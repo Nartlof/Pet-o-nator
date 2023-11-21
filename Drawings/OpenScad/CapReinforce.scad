@@ -7,8 +7,8 @@
  * License: Creative Commons CC0 1.0 Universal (CC0 1.0)
  * Description: This is an reinforcement for the bottle caps. The original cap must be glued inside
  *
- * Date Created: [Date of initial creation]
- * Last Updated: [Date of last modification]
+ * Date Created: 2023-11-14
+ * Last Updated: 2023-11-14
  *
  * This OpenSCAD file is provided under the Creative Commons CC0 1.0 Universal (CC0 1.0) License.
  * You are free to use, modify, and distribute this design for any purpose, without any restrictions.

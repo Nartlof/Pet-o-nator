@@ -134,3 +134,8 @@ void Motor::stop()
     started = false;
     measuredRPM = 0;
 }
+
+void Motor::setPid(float Kp, float Ki, float Kd)
+{
+    motorPID.SetTunings(Kp, Ki, Kd);
+}

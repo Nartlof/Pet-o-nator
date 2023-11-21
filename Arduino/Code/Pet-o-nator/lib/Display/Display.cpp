@@ -61,7 +61,8 @@ void Display::setMeasuredTemperature(float temperature)
     ajustValue(&measuredTemperature, temperature);
 }
 
-void Display::setStarted(bool start){
+void Display::setStarted(bool start)
+{
     started = start;
 }
 
@@ -93,6 +94,7 @@ void Display::update()
         }
         else
         {
+
             lLcd.print(F(" (mm/min)    stopped"));
         }
         anyChange = false;

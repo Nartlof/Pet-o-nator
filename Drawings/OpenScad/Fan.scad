@@ -7,8 +7,8 @@
  * License: Creative Commons CC0 1.0 Universal (CC0 1.0)
  * Description: this is a simple fan for a DC motor
  *
- * Date Created: [Date of initial creation]
- * Last Updated: [Date of last modification]
+ * Date Created: 2023-11-14
+ * Last Updated: 2023-11-14
  *
  * This OpenSCAD file is provided under the Creative Commons CC0 1.0 Universal (CC0 1.0) License.
  * You are free to use, modify, and distribute this design for any purpose, without any restrictions.
@@ -50,7 +50,7 @@ intersection()
                     {
                         rotate([ 0, 0, i * 360 / Blades ])
                         {
-                            translate(v = [ 0, 0, BladeHeigth / (4 * sin(BladeAngle)) ]) rotate([ BladeAngle, 0, 0 ])
+                            translate(v = [ 0, 0, BladeHeigth / (4 * sin(BladeAngle)) ]) rotate([ -BladeAngle, 0, 0 ])
                                 translate(v = [ FanDiameter / 4, 0, 0 ]) cube(
                                     [
                                         FanDiameter / 2, (BladeHeigth + BladeThickness) / sin(BladeAngle),

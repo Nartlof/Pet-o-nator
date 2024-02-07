@@ -50,7 +50,7 @@ intersection()
                     {
                         rotate([ 0, 0, i * 360 / Blades ])
                         {
-                            translate(v = [ 0, 0, BladeHeigth / (4 * sin(BladeAngle)) ]) rotate([ -BladeAngle, 0, 0 ])
+                            translate(v = [ 0, 0, BladeHeigth / 2 ]) rotate([ -BladeAngle, 0, 0 ])
                                 translate(v = [ FanDiameter / 4, 0, 0 ]) cube(
                                     [
                                         FanDiameter / 2, (BladeHeigth + BladeThickness) / sin(BladeAngle),

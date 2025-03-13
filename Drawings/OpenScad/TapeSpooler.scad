@@ -70,6 +70,15 @@ echo("(Zs+Zr)/Np", (Zs + Zr) / Np);
 // Calculando o número de engrenagens planeta apenas para checar se é maior que 3
 echo("Np=", floor(180 / asin((Zp + 2) / (Zs + Zp))));
 
+// Calculando o tamanho do hexagono para prender a manivela. Ele deve ter uma medida
+// que permita usar uma chave de boca, ou seja, a altura deve ser um inteiro. A altura h
+// do hexagono em relação à diagonal é h=d*sqrt(3)/2. É preciso achar d tal que h seja
+// inteiro e que respeite a espessura mínima.
+HexSize = let(dMax = (Zs - 2.5) * Mod - 2 * PartsMinThickness, h = floor(dMax * sqrt(3) / 2)) 2 * h * sqrt(3) / 3;
+
+// Espessura da aste da manivela
+HandleThickness = 3 / 2 * PartsMinThickness;
+
 $fa = ($preview) ? $fa : 2;
 $fs = ($preview) ? $fs : .2;
 
@@ -87,6 +96,7 @@ module SpoolCarrier()
         {
             union()
             {
+                // Carrier e o batente do carretel
                 Carrier(carve = false);
                 translate(v = [ 0, 0, -SpoolWidth / 2 - PartsMinThickness ])
                     cylinder(h = PartsMinThickness, d = SpoolInternalDiameter + 6 * PartsMinThickness, center = false);
@@ -108,7 +118,8 @@ module SpoolCarrier()
 
 module PlanetGear()
 {
-    coneHeigth = ((Zp + 2) * Mod - CopperInsertDiameter) / 2;
+    coneHeigth = PartsMinThickness + Lip;
+    dOut = (Zp + 2) * Mod;
     translate(v = [ 0, 0, SpoolWidth / 2 ]) render(convexity = 2) intersection()
     {
         union()
@@ -119,7 +130,7 @@ module PlanetGear()
 
                     translate(v = [ 0, 0, SpoolWidth / 2 - PartsMinThickness - Lip ]) union()
                 {
-                    cylinder(h = coneHeigth, d1 = (Zp + 2) * Mod, d2 = CopperInsertDiameter, center = false);
+                    cylinder(h = coneHeigth, d1 = dOut, d2 = dOut - 2 * coneHeigth, center = false);
                 }
             }
             cylinder(h = SpoolWidth + 2, d = CopperInsertDiameter + 2 * Lip, center = true);
@@ -134,30 +145,173 @@ module PositionPlanetGear()
 {
     for (i = [0:2])
     {
-        rotate(a = i * 120) translate(v = [ (Zr - Zp) / 2, 0, PartsMinThickness ]) rotate(a = -i * (Zr / Zp) * 120)
-            children();
+        rotate(a = i * 120) translate(v = [ (Zr - Zp) / 2, 0, 0 ]) rotate(a = -i * (Zr / Zp) * 120) children();
     }
 }
 
 module SunGear()
 {
-    spur_gear(modul = Mod, tooth_number = Zs, width = SpoolWidth, bore = Zs / 2, pressure_angle = 20,
-              helix_angle = -Helix, optimized = false);
-}
-
-render(convexity = 2) intersection()
-{
-    cylinder(h = SpoolWidth / 2, r = SpoolInternalDiameter, center = false);
-    union()
+    coneHeigth = PartsMinThickness + Lip; // Altura do cone superior
+    dOut = (Zs + 2) * Mod;
+    dIn = (Zs - 2.5) * Mod;
+    render(convexity = 2) difference()
     {
-        SpoolCarrier();
+        union()
+        {
+            intersection()
+            {
+                // Fazendo a parte de baixo cônica
+                union()
+                {
+                    hull()
+                    {
+                        cylinder(h = coneHeigth, d1 = dOut - 2 * coneHeigth, d2 = dOut, center = false);
+                        translate(v = [ 0, 0, SpoolWidth - 1 ]) cylinder(h = 1, d = dOut, center = false);
+                    }
+                }
 
-        PositionPlanetGear() PlanetGear();
-        translate(v = [ 0, 0, PartsMinThickness ]) SunGear();
+                spur_gear(modul = Mod, tooth_number = Zs, width = SpoolWidth, bore = CopperInsertDiameter,
+                          pressure_angle = 20, helix_angle = -Helix, optimized = false);
+            }
+            // Criando o encaixe superior
+            translate(v = [ 0, 0, SpoolWidth - coneHeigth ])
+            {
+                difference()
+                {
+                    union()
+                    {
+                        cylinder(h = coneHeigth - Lip, d1 = dIn, d2 = dIn + 2 * (coneHeigth - Lip), center = false);
+                        translate(v = [ 0, 0, coneHeigth - Lip ])
+                            cylinder(h = Lip, d = dIn + 2 * (coneHeigth - Lip), center = false);
+                        translate(v = [ 0, 0, coneHeigth ])
+                            cylinder(h = PartsMinThickness, d = Zs * Mod, center = false);
+                    }
+                    translate(v = [ 0, 0, -1 ])
+                        cylinder(h = coneHeigth + PartsMinThickness + 2, d = CopperInsertDiameter, center = false);
+                }
+            }
+        }
+        // Criando o furo hexagonal
+        translate(v = [ 0, 0, 2 * PartsMinThickness ]) HexAxis(gap = Gap);
     }
 }
-/*
-translate(v = [ 0, 0, PartsMinThickness ])
+
+module HexAxis(gap = 0)
+{
+    cylinder(h = SpoolWidth + HandleThickness, d = HexSize + 2 * gap, center = false, $fn = 6);
+}
+
+module PlanetsCarrier(base = true)
+{
+    module PlanetSpace()
+    {
+        dOut = (Zp + 3) * Mod;
+        translate(v = [ 0, 0, SpoolWidth / 2 + Gap ]) hull() for (i = [ 1, 0 ])
+        {
+            rotate(a = [ i * 180, 0, 0 ]) translate(v = [ 0, 0, -SpoolWidth / 2 - Gap ])
+                cylinder(h = PartsMinThickness, d1 = dOut - 2 * PartsMinThickness, d2 = dOut, center = false);
+        }
+    }
+    module SunSpace()
+    {
+        dOut = (Zs + 3) * Mod;
+        dIn = (Zs - 2) * Mod;
+        hull()
+        {
+            translate(v = [ 0, 0, -Gap ]) cylinder(h = 5 * Mod, d1 = dOut - 2 * PartsMinThickness,
+                                                   d2 = dIn + 2 * PartsMinThickness, center = false);
+            translate(v = [ 0, 0, SpoolWidth + Gap - Lip ])
+                cylinder(h = Lip, d = dIn + 2 * PartsMinThickness, center = false);
+        }
+    }
+
+    innerDiameter = SpoolInternalDiameter - 4 * PartsMinThickness - 2 * Gap;
+    planetsCarrierHeigth = SpoolWidth + 3 * PartsMinThickness + 2 * Gap;
+    baseDiameter = SpoolInternalDiameter + 6 * PartsMinThickness;
+    sCreewDiameter = 2.9; // Usando parafuso auto tarraxante de 2.9mm
+    intersection()
+    {
+        difference()
+        {
+            union()
+            {
+                // Corpo interno
+                cylinder(h = SpoolWidth + 3 * PartsMinThickness + 2 * Gap, d = innerDiameter, center = false);
+                // Base de fixação
+                cylinder(h = PartsMinThickness, d = baseDiameter, center = false);
+                translate(v = [ 0, 0, SpoolWidth + 2 * PartsMinThickness + 2 * Gap ]) hull()
+                {
+                    cylinder(h = Lip, d = SpoolInternalDiameter, center = false);
+                    cylinder(h = PartsMinThickness, d = SpoolInternalDiameter - 2 * (PartsMinThickness - Lip),
+                             center = false);
+                }
+            }
+            // Aberturas para as engrenagens planeta
+            PositionPlanetGear()
+            {
+                translate(v = [ 0, 0, Lip ])
+                    cylinder(h = SpoolWidth + 3 * PartsMinThickness - 2 * Lip, d = StealAxisDiamenter, center = false);
+                translate(v = [ 0, 0, 2 * PartsMinThickness ]) PlanetSpace();
+            }
+            // Eixo da engrenagem sol
+            translate(v = [ 0, 0, Lip ]) cylinder(h = 3 * PartsMinThickness, d = StealAxisDiamenter, center = false);
+            translate(v = [ 0, 0, 2 * PartsMinThickness ]) SunSpace();
+            translate(v = [ 0, 0, SpoolWidth + 2 * PartsMinThickness - 1 ])
+                cylinder(h = PartsMinThickness + 2, d = Zs * Mod + 2 * Gap, center = false);
+            // Buracos dos parafusos para unir as duas mentades
+            rotate(a = 180 / Np) PositionPlanetGear()
+                translate(v = [ 0, 0, planetsCarrierHeigth / 2 + 2 * PartsMinThickness ])
+            {
+                ScrewM3(lenght = 20, passThrough = PartsMinThickness);
+                cylinder(h = planetsCarrierHeigth, d = 5.5, center = false);
+            }
+            // Buracos dos parafusos para fixar o spooler na base de madeira
+            for (i = [0:3])
+            {
+                rotate(a = 90 * i + 22.5)
+                    translate(v = [ (baseDiameter + SpoolInternalDiameter) / 4, 0, PartsMinThickness ])
+                        ScrewM3(lenght = 2 * PartsMinThickness, passThrough = PartsMinThickness);
+            }
+        }
+        if (base)
+        {
+
+            cylinder(h = planetsCarrierHeigth / 2, d = baseDiameter, center = false);
+            rotate(a = 180 / Np) PositionPlanetGear() translate(v = [ 0, 0, planetsCarrierHeigth / 2 ])
+                cylinder(h = PartsMinThickness, d1 = 2 * PartsMinThickness + sCreewDiameter,
+                         d2 = 2 * (PartsMinThickness - Lip) + sCreewDiameter, center = false);
+        }
+        else
+        {
+            translate(v = [ 0, 0, planetsCarrierHeigth / 2 ]) difference()
+            {
+                cylinder(h = planetsCarrierHeigth / 2, d = baseDiameter, center = false);
+                rotate(a = 180 / Np) PositionPlanetGear()
+                    cylinder(h = PartsMinThickness, d1 = 2 * (PartsMinThickness + Gap) + sCreewDiameter,
+                             d2 = 2 * (PartsMinThickness + Gap - Lip) + sCreewDiameter, center = false);
+            }
+        }
+    }
+}
+
+color(c = "blue", alpha = 1.0) render() PlanetsCarrier(base = false);
+color(c = "Red", alpha = 1.0) render() PlanetsCarrier(base = true);
+translate(v = [ 0, 0, PartsMinThickness + Gap ])
+{
+    SpoolCarrier();
+    translate(v = [ 0, 0, PartsMinThickness ])
+    {
+        PositionPlanetGear() PlanetGear();
+
+        SunGear();
+        translate(v = [ 0, 0, 2 * PartsMinThickness ]) HexAxis();
+    }
+}
+
+//   }
+//}
+//*
+% render() translate(v = [ 0, 0, 2 * PartsMinThickness ])
 {
     Spool(FenseOnly = false);
     translate(v = [ 0, 0, SpoolUsefulWidth + PartsMinThickness ]) Spool(FenseOnly = true);

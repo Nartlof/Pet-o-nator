@@ -73,17 +73,36 @@ $fs = ($preview) ? $fs : .2;
 
 module ScrewM2(lenght = 10, passThrough = 4)
 {
+    bodyD = 1.9;
     rotate(a = [ 0, 180, 0 ])
     {
         // Corpo
-        cylinder(h = lenght, d = 1.9, center = false);
+        cylinder(h = lenght, d = bodyD, center = false);
         // Alargamento do furo para passar desempedido
         cylinder(h = passThrough, d = 2.2, center = false);
         // Cabeça do parafuso
         hull()
         {
             cylinder(h = .5, d = 4.3, center = true);
-            cylinder(h = 1.5, d = 1.9, center = false);
+            cylinder(h = 1.5, d = bodyD, center = false);
+        }
+    }
+}
+
+module ScrewM3(lenght = 10, passThrough = 4)
+{
+    bodyD = 2.6;
+    rotate(a = [ 0, 180, 0 ])
+    {
+        // Corpo
+        cylinder(h = lenght, d = bodyD, center = false);
+        // Alargamento do furo para passar desempedido
+        cylinder(h = passThrough, d = 2.9, center = false);
+        // Cabeça do parafuso
+        hull()
+        {
+            cylinder(h = .5, d = 5.5, center = true);
+            cylinder(h = 1.5, d = bodyD, center = false);
         }
     }
 }

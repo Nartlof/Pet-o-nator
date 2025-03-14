@@ -20,7 +20,7 @@ include <GlobalDefinitions.scad>
 use <Library/Gear/gears.scad>
 use <SpoolAndCarrier.scad>
 
-Renderizar = "All"; //["All","Planet","Sun"]
+Renderizar = "All"; //["All","Planet","Sun","PCBase","PCTop","HexAxis","SpoolCarrier","HandleArm"]
 
 /*************************************************
  *             Definição das engrenagens
@@ -81,8 +81,19 @@ HexSize = let(dMax = (Zs - 2.5) * Mod - 2 * PartsMinThickness, h = floor(dMax * 
 // Espessura da aste da manivela
 HandleThickness = 3 / 2 * PartsMinThickness;
 
+// Diametro da base
+BaseDiameter = SpoolInternalDiameter + 6 * PartsMinThickness;
+
 $fa = ($preview) ? $fa : 2;
 $fs = ($preview) ? $fs : .2;
+
+module PositionPlanetGear()
+{
+    for (i = [0:2])
+    {
+        rotate(a = i * 120) translate(v = [ (Zr - Zp) / 2, 0, 0 ]) rotate(a = -i * (Zr / Zp) * 120) children();
+    }
+}
 
 module SpoolCarrier()
 {
@@ -111,6 +122,14 @@ module SpoolCarrier()
             }
             cylinder(h = SpoolWidth + 2 * PartsMinThickness + 1, d = innerDiameter - 2 * PartsMinThickness,
                      center = true);
+            // Buracos dos parafusos para fixar o spooler na base de madeira
+            for (i = [0:3])
+            {
+                rotate(a = 90 * i + 22.5) translate(
+                    v = [ (BaseDiameter + SpoolInternalDiameter) / 4, 0, -(SpoolWidth / 2 + PartsMinThickness) ])
+                    ScrewM3(lenght = 2 * PartsMinThickness, passThrough = PartsMinThickness,
+                            deepness = PartsMinThickness);
+            }
         }
         translate(v = [ 0, 0, -SpoolWidth / 2 + lip ])
             ring_gear(modul = Mod, tooth_number = Zr, width = SpoolWidth - 2 * lip, rim_width = PartsMinThickness,
@@ -140,14 +159,6 @@ module PlanetGear()
         translate(v = [ 0, 0, -SpoolWidth / 2 ])
             spur_gear(modul = Mod, tooth_number = Zp, width = SpoolWidth, bore = CopperInsertDiameter,
                       pressure_angle = 20, helix_angle = Helix, optimized = false);
-    }
-}
-
-module PositionPlanetGear()
-{
-    for (i = [0:2])
-    {
-        rotate(a = i * 120) translate(v = [ (Zr - Zp) / 2, 0, 0 ]) rotate(a = -i * (Zr / Zp) * 120) children();
     }
 }
 
@@ -200,7 +211,12 @@ module SunGear()
 
 module HexAxis(gap = 0)
 {
-    cylinder(h = SpoolWidth + HandleThickness, d = HexSize + 2 * gap, center = false, $fn = 6);
+    difference()
+    {
+        cylinder(h = SpoolWidth + HandleThickness, d = HexSize + 2 * gap, center = false, $fn = 6);
+        translate(v = [ 0, -(HexSize / 2 + 1.5), SpoolWidth + HandleThickness / 2 ]) rotate(a = [ 90, 0, 0 ])
+            ScrewM2(lenght = 10, passThrough = 0, deepness = 0);
+    }
 }
 
 module PlanetsCarrier(base = true)
@@ -264,8 +280,8 @@ module PlanetsCarrier(base = true)
             rotate(a = 180 / Np) PositionPlanetGear()
                 translate(v = [ 0, 0, planetsCarrierHeigth / 2 + 2 * PartsMinThickness ])
             {
-                ScrewM3(lenght = 20, passThrough = PartsMinThickness);
-                cylinder(h = planetsCarrierHeigth, d = 5.5, center = false);
+                ScrewM3(lenght = 20, passThrough = PartsMinThickness, deepness = planetsCarrierHeigth);
+                // cylinder(h = planetsCarrierHeigth, d = 5.5, center = false);
             }
             // Buracos dos parafusos para fixar o spooler na base de madeira
             for (i = [0:3])
@@ -296,6 +312,82 @@ module PlanetsCarrier(base = true)
     }
 }
 
+module HandleArm()
+{
+    handleScrewD = 3;
+    profileRadius = HandleThickness * sqrt(2) / 2;
+    handleLenght = SpoolFenseDiameter / 2 - HandleThickness - handleScrewD / 2;
+    module quartProfile()
+    {
+        difference()
+        {
+            intersection()
+            {
+                translate(v = [ HandleThickness - profileRadius, 0 ]) circle(r = profileRadius);
+                square(size = [ HandleThickness, HandleThickness / 2 ], center = false);
+            }
+            translate(v = [ 0, HandleThickness / 2 + profileRadius * (1 - (1 - cos(45))), 0 ])
+                circle(r = profileRadius);
+        }
+    }
+    module halfProfile()
+    {
+        quartProfile();
+        mirror(v = [ 0, 1, 0 ]) quartProfile();
+    }
+
+    module ending(d = 10)
+    {
+
+        alpha =
+            asin((d / 2 + HandleThickness) / (d + HandleThickness)); // Angulo de concordância entre a aste e o engate
+
+        cylinder(h = HandleThickness, d = d + HandleThickness, center = true);
+        rotate_extrude(angle = 360, convexity = 2) translate(v = [ d / 2, 0, 0 ]) halfProfile();
+
+        for (i = [ 0, 1 ])
+        {
+            mirror(v = [ i, 0, 0 ])
+            {
+
+                translate(v = [ sin(alpha), cos(alpha), 0 ] * (d + HandleThickness))
+                    rotate_extrude(angle = 90 - alpha, convexity = 2) translate(v = [ -d / 2 - HandleThickness, 0, 0 ])
+                        halfProfile();
+            }
+        }
+    }
+
+    difference()
+    {
+        union()
+        { // Aste
+            rotate(a = [ -90, 0, 0 ]) linear_extrude(height = handleLenght, center = false, convexity = 10, twist = 0,
+                                                     slices = 20, scale = 1.0)
+            {
+                for (i = [ 0, 180 ])
+                {
+
+                    rotate(a = i)
+                    {
+                        halfProfile();
+                    }
+                }
+            }
+            // Encaixe hexagonal
+            ending(d = HexSize);
+            // Engate da manopla
+            translate(v = [ 0, SpoolFenseDiameter / 2 - HandleThickness - handleScrewD / 2 ]) rotate(a = 180)
+                ending(d = handleScrewD);
+        }
+        rotate(a = [ 0, 180, 0 ])
+            translate(v = [ 0, SpoolFenseDiameter / 2 - HandleThickness - handleScrewD / 2, HandleThickness / 2 ])
+                ScrewM3(lenght = 10, passThrough = HandleThickness, deepness = 0);
+        cylinder(h = HandleThickness + 1, d = HexSize, center = true, $fn = 6);
+        translate(v = [ 0, -HexSize / 2 - HandleThickness + Lip, 0 ]) rotate(a = [ 90, 0, 0 ])
+            ScrewM2(lenght = 10, passThrough = 10, deepness = HandleThickness);
+    }
+}
+
 if (Renderizar == "All")
 {
 
@@ -309,7 +401,8 @@ if (Renderizar == "All")
             PositionPlanetGear() PlanetGear();
 
             SunGear();
-            translate(v = [ 0, 0, 2 * PartsMinThickness ]) HexAxis();
+            translate(v = [ 0, 0, 2 * PartsMinThickness ]) color(c = "green", alpha = 1.0) HexAxis();
+            translate(v = [ 0, 0, SpoolWidth + 2 * PartsMinThickness + HandleThickness / 2 ]) render() HandleArm();
         }
     }
 
@@ -323,16 +416,29 @@ else if (Renderizar == "Planet")
 {
     PlanetGear();
 }
-
 else if (Renderizar == "Sun")
 {
     SunGear();
 }
-else if (Renderizar == "Tudo")
+else if (Renderizar == "PCBase")
 {
+    PlanetsCarrier(base = true);
 }
-else if (Renderizar == "Tudo")
+else if (Renderizar == "PCTop")
 {
+    PlanetsCarrier(base = false);
+}
+else if (Renderizar == "HexAxis")
+{
+    rotate(a = [ 90, 0, 0 ]) HexAxis(gap = 0);
+}
+else if (Renderizar == "SpoolCarrier")
+{
+    SpoolCarrier();
+}
+else if (Renderizar == "HandleArm")
+{
+    HandleArm();
 }
 else
 {

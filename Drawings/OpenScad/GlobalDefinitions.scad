@@ -71,9 +71,11 @@ Gap = .25;
 $fa = ($preview) ? $fa : 2;
 $fs = ($preview) ? $fs : .2;
 
-module ScrewM2(lenght = 10, passThrough = 4)
+module ScrewM2(lenght = 10, passThrough = 4, deepness = 0)
 {
     bodyD = 1.9;
+    headD = 4.3;
+    cylinder(h = deepness + .25, d = headD, center = false);
     rotate(a = [ 0, 180, 0 ])
     {
         // Corpo
@@ -83,15 +85,18 @@ module ScrewM2(lenght = 10, passThrough = 4)
         // Cabeça do parafuso
         hull()
         {
-            cylinder(h = .5, d = 4.3, center = true);
+            cylinder(h = .5, d = headD, center = true);
             cylinder(h = 1.5, d = bodyD, center = false);
         }
     }
 }
 
-module ScrewM3(lenght = 10, passThrough = 4)
+module ScrewM3(lenght = 10, passThrough = 4, deepness = 0)
 {
     bodyD = 2.6;
+    headD = 5.5;
+    cylinder(h = deepness + .25, d = headD, center = false);
+
     rotate(a = [ 0, 180, 0 ])
     {
         // Corpo
@@ -101,7 +106,7 @@ module ScrewM3(lenght = 10, passThrough = 4)
         // Cabeça do parafuso
         hull()
         {
-            cylinder(h = .5, d = 5.5, center = true);
+            cylinder(h = .5, d = headD, center = true);
             cylinder(h = 1.5, d = bodyD, center = false);
         }
     }

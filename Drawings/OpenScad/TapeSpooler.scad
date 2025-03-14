@@ -17,7 +17,7 @@
  */
 
 include <GlobalDefinitions.scad>
-use <Library\gear\gears.scad>
+use <Library/Gear/gears.scad>
 use <SpoolAndCarrier.scad>
 
 Renderizar = "All"; //["All","Planet","Sun"]

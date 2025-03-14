@@ -20,6 +20,8 @@ include <GlobalDefinitions.scad>
 use <Library\gear\gears.scad>
 use <SpoolAndCarrier.scad>
 
+Renderizar = "All"; //["All","Planet","Sun"]
+
 /*************************************************
  *             Definição das engrenagens
  * Usando o formulário disponível em:
@@ -294,27 +296,45 @@ module PlanetsCarrier(base = true)
     }
 }
 
-color(c = "blue", alpha = 1.0) render() PlanetsCarrier(base = false);
-color(c = "Red", alpha = 1.0) render() PlanetsCarrier(base = true);
-translate(v = [ 0, 0, PartsMinThickness + Gap ])
+if (Renderizar == "All")
 {
-    SpoolCarrier();
-    translate(v = [ 0, 0, PartsMinThickness ])
-    {
-        PositionPlanetGear() PlanetGear();
 
-        SunGear();
-        translate(v = [ 0, 0, 2 * PartsMinThickness ]) HexAxis();
+    color(c = "blue", alpha = 1.0) render() PlanetsCarrier(base = false);
+    color(c = "Red", alpha = 1.0) render() PlanetsCarrier(base = true);
+    translate(v = [ 0, 0, PartsMinThickness + Gap ])
+    {
+        SpoolCarrier();
+        translate(v = [ 0, 0, PartsMinThickness ])
+        {
+            PositionPlanetGear() PlanetGear();
+
+            SunGear();
+            translate(v = [ 0, 0, 2 * PartsMinThickness ]) HexAxis();
+        }
+    }
+
+    % render() translate(v = [ 0, 0, 2 * PartsMinThickness ])
+    {
+        Spool(FenseOnly = false);
+        translate(v = [ 0, 0, SpoolUsefulWidth + PartsMinThickness ]) Spool(FenseOnly = true);
     }
 }
-
-//   }
-//}
-//*
-% render() translate(v = [ 0, 0, 2 * PartsMinThickness ])
+else if (Renderizar == "Planet")
 {
-    Spool(FenseOnly = false);
-    translate(v = [ 0, 0, SpoolUsefulWidth + PartsMinThickness ]) Spool(FenseOnly = true);
+    PlanetGear();
 }
 
-//*/
+else if (Renderizar == "Sun")
+{
+    SunGear();
+}
+else if (Renderizar == "Tudo")
+{
+}
+else if (Renderizar == "Tudo")
+{
+}
+else
+{
+    assert(false, "Parâmetro inválido");
+}

@@ -20,7 +20,10 @@ include <GlobalDefinitions.scad>
 use <Library/Gear/gears.scad>
 use <SpoolAndCarrier.scad>
 
-Renderizar = "All"; //["All","Planet","Sun","PCBase","PCTop","HexAxis","SpoolCarrier","HandleArm"]
+Renderizar =
+    "All"; //["All","Planet","Sun","PCBase","PCTop","HexAxis","SpoolCarrier","CrankArm","CrankSpine","CrankHandle"]
+
+/*[Hidden]*/
 
 /*************************************************
  *             Definição das engrenagens
@@ -79,7 +82,7 @@ echo("Np=", floor(180 / asin((Zp + 2) / (Zs + Zp))));
 HexSize = let(dMax = (Zs - 2.5) * Mod - 2 * PartsMinThickness, h = floor(dMax * sqrt(3) / 2)) 2 * h * sqrt(3) / 3;
 
 // Espessura da aste da manivela
-HandleThickness = 3 / 2 * PartsMinThickness;
+CrankArmThickness = 3 / 2 * PartsMinThickness;
 
 // Diametro da base
 BaseDiameter = SpoolInternalDiameter + 6 * PartsMinThickness;
@@ -213,9 +216,10 @@ module HexAxis(gap = 0)
 {
     difference()
     {
-        cylinder(h = SpoolWidth + HandleThickness, d = HexSize + 2 * gap, center = false, $fn = 6);
-        translate(v = [ 0, -(HexSize / 2 + 1.5), SpoolWidth + HandleThickness / 2 ]) rotate(a = [ 90, 0, 0 ])
-            ScrewM2(lenght = 10, passThrough = 0, deepness = 0);
+        cylinder(h = SpoolWidth + CrankArmThickness, d = HexSize + 2 * gap, center = false, $fn = 6);
+        // Buraco do parafuso de fixação
+        /*translate(v = [ 0, -(HexSize / 2 + 1.5), SpoolWidth + CrankArmThickness / 2 ]) rotate(a = [ 90, 0, 0 ])
+            ScrewM2(lenght = 10, passThrough = 0, deepness = 0);//*/
     }
 }
 
@@ -312,21 +316,21 @@ module PlanetsCarrier(base = true)
     }
 }
 
-module HandleArm()
+module CrankArm()
 {
-    handleScrewD = 3;
-    profileRadius = HandleThickness * sqrt(2) / 2;
-    handleLenght = SpoolFenseDiameter / 2 - HandleThickness - handleScrewD / 2;
+    crankScrewD = 3;
+    profileRadius = CrankArmThickness * sqrt(2) / 2;
+    crankArmLenght = SpoolFenseDiameter / 2 - CrankArmThickness - crankScrewD / 2;
     module quartProfile()
     {
         difference()
         {
             intersection()
             {
-                translate(v = [ HandleThickness - profileRadius, 0 ]) circle(r = profileRadius);
-                square(size = [ HandleThickness, HandleThickness / 2 ], center = false);
+                translate(v = [ CrankArmThickness - profileRadius, 0 ]) circle(r = profileRadius);
+                square(size = [ CrankArmThickness, CrankArmThickness / 2 ], center = false);
             }
-            translate(v = [ 0, HandleThickness / 2 + profileRadius * (1 - (1 - cos(45))), 0 ])
+            translate(v = [ 0, CrankArmThickness / 2 + profileRadius * (1 - (1 - cos(45))), 0 ])
                 circle(r = profileRadius);
         }
     }
@@ -339,10 +343,10 @@ module HandleArm()
     module ending(d = 10)
     {
 
-        alpha =
-            asin((d / 2 + HandleThickness) / (d + HandleThickness)); // Angulo de concordância entre a aste e o engate
+        alpha = asin((d / 2 + CrankArmThickness) /
+                     (d + CrankArmThickness)); // Angulo de concordância entre a aste e o engate
 
-        cylinder(h = HandleThickness, d = d + HandleThickness, center = true);
+        cylinder(h = CrankArmThickness, d = d + CrankArmThickness, center = true);
         rotate_extrude(angle = 360, convexity = 2) translate(v = [ d / 2, 0, 0 ]) halfProfile();
 
         for (i = [ 0, 1 ])
@@ -350,9 +354,9 @@ module HandleArm()
             mirror(v = [ i, 0, 0 ])
             {
 
-                translate(v = [ sin(alpha), cos(alpha), 0 ] * (d + HandleThickness))
-                    rotate_extrude(angle = 90 - alpha, convexity = 2) translate(v = [ -d / 2 - HandleThickness, 0, 0 ])
-                        halfProfile();
+                translate(v = [ sin(alpha), cos(alpha), 0 ] * (d + CrankArmThickness))
+                    rotate_extrude(angle = 90 - alpha, convexity = 2)
+                        translate(v = [ -d / 2 - CrankArmThickness, 0, 0 ]) halfProfile();
             }
         }
     }
@@ -361,7 +365,7 @@ module HandleArm()
     {
         union()
         { // Aste
-            rotate(a = [ -90, 0, 0 ]) linear_extrude(height = handleLenght, center = false, convexity = 10, twist = 0,
+            rotate(a = [ -90, 0, 0 ]) linear_extrude(height = crankArmLenght, center = false, convexity = 10, twist = 0,
                                                      slices = 20, scale = 1.0)
             {
                 for (i = [ 0, 180 ])
@@ -375,17 +379,46 @@ module HandleArm()
             }
             // Encaixe hexagonal
             ending(d = HexSize);
+            cylinder(h = CrankArmThickness / 2 + PartsMinThickness, d = HexSize + 2 * PartsMinThickness,
+                     center = false);
             // Engate da manopla
-            translate(v = [ 0, SpoolFenseDiameter / 2 - HandleThickness - handleScrewD / 2 ]) rotate(a = 180)
-                ending(d = handleScrewD);
+            translate(v = [ 0, SpoolFenseDiameter / 2 - CrankArmThickness - crankScrewD / 2 ]) rotate(a = 180)
+                ending(d = crankScrewD);
         }
-        rotate(a = [ 0, 180, 0 ])
-            translate(v = [ 0, SpoolFenseDiameter / 2 - HandleThickness - handleScrewD / 2, HandleThickness / 2 ])
-                ScrewM3(lenght = 10, passThrough = HandleThickness, deepness = 0);
-        cylinder(h = HandleThickness + 1, d = HexSize, center = true, $fn = 6);
-        translate(v = [ 0, -HexSize / 2 - HandleThickness + Lip, 0 ]) rotate(a = [ 90, 0, 0 ])
-            ScrewM2(lenght = 10, passThrough = 10, deepness = HandleThickness);
+        // Parafuso da manopla
+        // rotate(a = [ 0, 180, 0 ])
+        translate(v = [ 0, SpoolFenseDiameter / 2 - CrankArmThickness - crankScrewD / 2, CrankArmThickness / 2 ])
+            ScrewM3(lenght = 10, passThrough = CrankArmThickness, deepness = 0);
+        // Furo exagonal
+        translate(v = [ 0, 0, -CrankArmThickness ]) HexAxis(gap = Gap);
+        // cylinder(h = CrankArmThickness + 1, d = HexSize, center = true, $fn = 6);
+        //  Parafuso de fixação
+        /*translate(v = [ 0, -HexSize / 2 - CrankArmThickness + Lip, 0 ]) rotate(a = [ 90, 0, 0 ])
+            ScrewM2(lenght = 10, passThrough = 10, deepness = CrankArmThickness);//*/
     }
+}
+
+module CrankSpine()
+{
+}
+
+module CrankHandle()
+{
+    module profile(r = 100)
+    {
+        translate(v = [ 0, 3 / 2 * r, 0 ]) rotate(a = [ 180, 0, 0 ]) difference()
+        {
+            union()
+            {
+                circle(r = r);
+                square(size = [ sqrt(3) / 2, 3 / 2 ] * r, center = false);
+            }
+            translate(v = [ -r, 0 ]) square(size = 2 * r, center = true);
+            translate(v = [ sqrt(3), 1 ] * r) circle(r = r);
+        }
+    }
+
+    rotate_extrude(angle = 360, convexity = 2) profile();
 }
 
 if (Renderizar == "All")
@@ -402,7 +435,8 @@ if (Renderizar == "All")
 
             SunGear();
             translate(v = [ 0, 0, 2 * PartsMinThickness ]) color(c = "green", alpha = 1.0) HexAxis();
-            translate(v = [ 0, 0, SpoolWidth + 2 * PartsMinThickness + HandleThickness / 2 ]) render() HandleArm();
+            translate(v = [ 0, 0, SpoolWidth + 2 * PartsMinThickness + CrankArmThickness / 2 ])
+                rotate(a = [ 0, 180, 0 ]) render() CrankArm();
         }
     }
 
@@ -436,9 +470,17 @@ else if (Renderizar == "SpoolCarrier")
 {
     SpoolCarrier();
 }
-else if (Renderizar == "HandleArm")
+else if (Renderizar == "CrankArm")
 {
-    HandleArm();
+    CrankArm();
+}
+else if (Renderizar == "CrankSpine")
+{
+    CrankSpine();
+}
+else if (Renderizar == "CrankHandle")
+{
+    CrankHandle();
 }
 else
 {

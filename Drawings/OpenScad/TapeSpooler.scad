@@ -20,10 +20,11 @@ include <GlobalDefinitions.scad>
 use <Library/Gear/gears.scad>
 use <SpoolAndCarrier.scad>
 
-Renderizar =
-    "All"; //["All","Planet","Sun","PCBase","PCTop","HexAxis","SpoolCarrier","CrankArm","CrankSpine","CrankHandle"]
+Renderizar = "All"; //["All","Planet","Sun","PCBase","PCTop","HexAxis","Carrier","Arm","Spine","Handle","Core"]
 
 /*[Hidden]*/
+
+CrankHandleHeight = 40;
 
 /*************************************************
  *             Definição das engrenagens
@@ -86,6 +87,9 @@ CrankArmThickness = 3 / 2 * PartsMinThickness;
 
 // Diametro da base
 BaseDiameter = SpoolInternalDiameter + 6 * PartsMinThickness;
+
+// Diametro do furo para o parafuso da manopla
+CrankScrewD = 3;
 
 $fa = ($preview) ? $fa : 2;
 $fs = ($preview) ? $fs : .2;
@@ -318,9 +322,8 @@ module PlanetsCarrier(base = true)
 
 module CrankArm()
 {
-    crankScrewD = 3;
     profileRadius = CrankArmThickness * sqrt(2) / 2;
-    crankArmLenght = SpoolFenseDiameter / 2 - CrankArmThickness - crankScrewD / 2;
+    crankArmLenght = SpoolFenseDiameter / 2 - CrankArmThickness - CrankScrewD / 2;
     module quartProfile()
     {
         difference()
@@ -382,12 +385,12 @@ module CrankArm()
             cylinder(h = CrankArmThickness / 2 + PartsMinThickness, d = HexSize + 2 * PartsMinThickness,
                      center = false);
             // Engate da manopla
-            translate(v = [ 0, SpoolFenseDiameter / 2 - CrankArmThickness - crankScrewD / 2 ]) rotate(a = 180)
-                ending(d = crankScrewD);
+            translate(v = [ 0, SpoolFenseDiameter / 2 - CrankArmThickness - CrankScrewD / 2 ]) rotate(a = 180)
+                ending(d = CrankScrewD);
         }
         // Parafuso da manopla
         // rotate(a = [ 0, 180, 0 ])
-        translate(v = [ 0, SpoolFenseDiameter / 2 - CrankArmThickness - crankScrewD / 2, CrankArmThickness / 2 ])
+        translate(v = [ 0, SpoolFenseDiameter / 2 - CrankArmThickness - CrankScrewD / 2, CrankArmThickness / 2 ])
             ScrewM3(lenght = 10, passThrough = CrankArmThickness, deepness = 0);
         // Furo exagonal
         translate(v = [ 0, 0, -CrankArmThickness ]) HexAxis(gap = Gap);
@@ -398,27 +401,50 @@ module CrankArm()
     }
 }
 
-module CrankSpine()
-{
-}
-
 module CrankHandle()
 {
-    module profile(r = 100)
+    r_2 = CrankArmThickness + CrankScrewD / 2;
+    r_1 = r_2 - CrankArmThickness * (sqrt(2) - 1) / 2;
+    difference()
     {
-        translate(v = [ 0, 3 / 2 * r, 0 ]) rotate(a = [ 180, 0, 0 ]) difference()
+        hull()
         {
-            union()
-            {
-                circle(r = r);
-                square(size = [ sqrt(3) / 2, 3 / 2 ] * r, center = false);
-            }
-            translate(v = [ -r, 0 ]) square(size = 2 * r, center = true);
-            translate(v = [ sqrt(3), 1 ] * r) circle(r = r);
+            translate(v = [ 0, 0, CrankHandleHeight - PartsMinThickness - 2 * Gap - 1 ])
+                cylinder(h = 1, r = CrankArmThickness + CrankScrewD / 2, center = false);
+            cylinder(h = r_2 - r_1, r1 = r_1, r2 = r_2, center = false);
+        }
+        translate(v = [ 0, 0, -Gap ]) cylinder(h = CrankHandleHeight, r = PartsMinThickness + Gap, center = false);
+    }
+}
+
+module CrankHandleCore(gap = 0)
+{
+    difference()
+    {
+        cylinder(h = CrankHandleHeight - PartsMinThickness, d = 2 * PartsMinThickness + 3 * gap, center = false,
+                 $fn = 6);
+        if (gap == 0)
+        {
+
+            rotate(a = [ 180, 0, 0 ]) translate(v = [ 0, 0, PartsMinThickness ])
+                ScrewM3(lenght = 17, passThrough = 0, deepness = 0);
+            translate(v = [ 0, 0, CrankHandleHeight ])
+                ScrewM2(lenght = 13, passThrough = PartsMinThickness, deepness = 0);
         }
     }
+}
 
-    rotate_extrude(angle = 360, convexity = 2) profile();
+module CrankHandleCap()
+{
+    difference()
+    {
+        scale([ 0, 0, 1 ] + [ 1, 1, 0 ] * (CrankArmThickness + CrankScrewD / 2) / PartsMinThickness) intersection()
+        {
+            sphere(r = PartsMinThickness);
+            cylinder(h = PartsMinThickness, r = PartsMinThickness, center = false);
+        }
+        translate(v = [ 0, 0, PartsMinThickness ]) ScrewM2(lenght = 13, passThrough = PartsMinThickness, deepness = 0);
+    }
 }
 
 if (Renderizar == "All")
@@ -436,7 +462,16 @@ if (Renderizar == "All")
             SunGear();
             translate(v = [ 0, 0, 2 * PartsMinThickness ]) color(c = "green", alpha = 1.0) HexAxis();
             translate(v = [ 0, 0, SpoolWidth + 2 * PartsMinThickness + CrankArmThickness / 2 ])
+            {
                 rotate(a = [ 0, 180, 0 ]) render() CrankArm();
+                translate(
+                    v = [ 0, SpoolFenseDiameter / 2 - CrankArmThickness - CrankScrewD / 2, CrankArmThickness / 2 ])
+                {
+                    CrankHandleCore();
+                    translate(v = [ 0, 0, Gap ]) CrankHandle();
+                    translate(v = [ 0, 0, CrankHandleHeight - PartsMinThickness ]) CrankHandleCap();
+                }
+            }
         }
     }
 
@@ -466,23 +501,34 @@ else if (Renderizar == "HexAxis")
 {
     rotate(a = [ 90, 0, 0 ]) HexAxis(gap = 0);
 }
-else if (Renderizar == "SpoolCarrier")
+else if (Renderizar == "Carrier")
 {
     SpoolCarrier();
 }
-else if (Renderizar == "CrankArm")
+else if (Renderizar == "Arm")
 {
     CrankArm();
 }
-else if (Renderizar == "CrankSpine")
+else if (Renderizar == "Spine")
 {
     CrankSpine();
 }
-else if (Renderizar == "CrankHandle")
+else if (Renderizar == "Handle")
 {
     CrankHandle();
 }
+else if (Renderizar == "Core")
+{
+    MakeCrankHandleCore();
+}
+
 else
 {
     assert(false, "Parâmetro inválido");
+}
+
+// Modulos para o MAKE
+module MakeCrankHandleCore() // make me
+{
+    rotate(a = [ 90, 0, 0 ]) CrankHandleCore();
 }

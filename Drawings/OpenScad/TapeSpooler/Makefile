@@ -10,7 +10,7 @@ all: ${TARGETS}
 include $(wildcard *.deps)
 
 %.scad: Makefile
-     printf 'use <$(BASEFILE)>\n$*();' > $@
-	 
+	printf 'use <$(BASEFILE)>\n$*();' > $@
+
 %.stl: %.scad
-     openscad -m make -o $@ -d $@.deps $<
+	openscad -m make -o $@ -d $@.deps $<

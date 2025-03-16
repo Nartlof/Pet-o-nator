@@ -20,7 +20,7 @@ include <GlobalDefinitions.scad>
 use <Library/Gear/gears.scad>
 use <SpoolAndCarrier.scad>
 
-Renderizar = "All"; //["All","Planet","Sun","PCBase","PCTop","HexAxis","Carrier","Arm","Spine","Handle","Core"]
+Renderizar = "All"; //["All","Planet","Sun","PCBase","PCTop","HexAxis","Carrier","Arm","Handle","Core","Cap"]
 
 /*[Hidden]*/
 
@@ -102,7 +102,7 @@ module PositionPlanetGear()
     }
 }
 
-module SpoolCarrier()
+module SpoolCarrier() // make me
 {
     // Diametro do espaço interno do carrier
     innerDiameter = SpoolInternalDiameter - 2 * PartsMinThickness;
@@ -144,7 +144,7 @@ module SpoolCarrier()
     }
 }
 
-module PlanetGear()
+module PlanetGear() // make me
 {
     coneHeigth = PartsMinThickness + Lip;
     dOut = (Zp + 2) * Mod;
@@ -169,7 +169,7 @@ module PlanetGear()
     }
 }
 
-module SunGear()
+module SunGear() // make me
 {
     coneHeigth = PartsMinThickness + Lip; // Altura do cone superior
     dOut = (Zs + 2) * Mod;
@@ -320,7 +320,7 @@ module PlanetsCarrier(base = true)
     }
 }
 
-module CrankArm()
+module CrankArm() // make me
 {
     profileRadius = CrankArmThickness * sqrt(2) / 2;
     crankArmLenght = SpoolFenseDiameter / 2 - CrankArmThickness - CrankScrewD / 2;
@@ -401,7 +401,7 @@ module CrankArm()
     }
 }
 
-module CrankHandle()
+module CrankHandle() // make me
 {
     r_2 = CrankArmThickness + CrankScrewD / 2;
     r_1 = r_2 - CrankArmThickness * (sqrt(2) - 1) / 2;
@@ -417,24 +417,19 @@ module CrankHandle()
     }
 }
 
-module CrankHandleCore(gap = 0)
+module CrankHandleCore() // make me
 {
     difference()
     {
-        cylinder(h = CrankHandleHeight - PartsMinThickness, d = 2 * PartsMinThickness + 3 * gap, center = false,
-                 $fn = 6);
-        if (gap == 0)
-        {
+        cylinder(h = CrankHandleHeight - PartsMinThickness, d = 2 * PartsMinThickness, center = false, $fn = 6);
 
-            rotate(a = [ 180, 0, 0 ]) translate(v = [ 0, 0, PartsMinThickness ])
-                ScrewM3(lenght = 17, passThrough = 0, deepness = 0);
-            translate(v = [ 0, 0, CrankHandleHeight ])
-                ScrewM2(lenght = 13, passThrough = PartsMinThickness, deepness = 0);
-        }
+        rotate(a = [ 180, 0, 0 ]) translate(v = [ 0, 0, PartsMinThickness ])
+            ScrewM3(lenght = 17, passThrough = 0, deepness = 0);
+        translate(v = [ 0, 0, CrankHandleHeight ]) ScrewM2(lenght = 13, passThrough = PartsMinThickness, deepness = 0);
     }
 }
 
-module CrankHandleCap()
+module CrankHandleCap() // make me
 {
     difference()
     {
@@ -495,7 +490,7 @@ else if (Renderizar == "PCBase")
 }
 else if (Renderizar == "PCTop")
 {
-    PlanetsCarrier(base = false);
+    PlanetsCarrierTop();
 }
 else if (Renderizar == "HexAxis")
 {
@@ -509,26 +504,48 @@ else if (Renderizar == "Arm")
 {
     CrankArm();
 }
-else if (Renderizar == "Spine")
-{
-    CrankSpine();
-}
 else if (Renderizar == "Handle")
 {
     CrankHandle();
 }
 else if (Renderizar == "Core")
 {
-    MakeCrankHandleCore();
+    crankHandleCore();
 }
-
+else if (Renderizar == "Cap")
+{
+    CrankHandleCap();
+}
 else
 {
     assert(false, "Parâmetro inválido");
 }
 
 // Modulos para o MAKE
-module MakeCrankHandleCore() // make me
+module crankHandleCore() // make me
 {
     rotate(a = [ 90, 0, 0 ]) CrankHandleCore();
+}
+
+module PlanetsCarrierBase() // make me
+{
+    PlanetsCarrier(base = true);
+}
+
+module PlanetsCarrierTop() // make me
+{
+    translate(v = [ 0, 0, SpoolWidth + 3 * PartsMinThickness ]) rotate(a = [ 180, 0, 0 ]) PlanetsCarrier(base = false);
+}
+
+module hexAxis(ARGS) // make me
+{
+    rotate(a = [ 90, 0, 0 ]) HexAxis(gap = 0);
+}
+module SpoolBase() // make me
+{
+    Spool(FenseOnly = false);
+}
+module SpoolFense() // make me
+{
+    Spool(FenseOnly = true);
 }

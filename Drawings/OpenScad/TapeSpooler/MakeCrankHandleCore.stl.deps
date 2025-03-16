@@ -1,6 +1,0 @@
-MakeCrankHandleCore.stl: \
-	/home/eduardo/Pet-o-nator/Drawings/OpenScad/SpoolAndCarrier.scad \
-	/home/eduardo/Pet-o-nator/Drawings/OpenScad/Library/Gear/gears.scad \
-	/home/eduardo/Pet-o-nator/Drawings/OpenScad/GlobalDefinitions.scad \
-	/home/eduardo/Pet-o-nator/Drawings/OpenScad/TapeSpooler.scad \
-	MakeCrankHandleCore.scad

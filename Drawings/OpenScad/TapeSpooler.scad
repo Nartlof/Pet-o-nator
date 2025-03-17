@@ -417,7 +417,7 @@ module CrankHandle() // make me
     }
 }
 
-module CrankHandleCore() // make me
+module CrankHandleCore()
 {
     difference()
     {
@@ -537,7 +537,7 @@ module PlanetsCarrierTop() // make me
     translate(v = [ 0, 0, SpoolWidth + 3 * PartsMinThickness ]) rotate(a = [ 180, 0, 0 ]) PlanetsCarrier(base = false);
 }
 
-module hexAxis(ARGS) // make me
+module hexAxis() // make me
 {
     rotate(a = [ 90, 0, 0 ]) HexAxis(gap = 0);
 }

@@ -14,4 +14,4 @@ include $(wildcard *.deps)
 	printf 'use <$(BASEFILE)>\n$*();' > $@
 
 %.stl: %.scad
-	openscad -m make -o $@ -d $@.deps $<
+	openscad --export-format binstl -m make -o $@ -d $@.deps $<

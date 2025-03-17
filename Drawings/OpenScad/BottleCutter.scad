@@ -1,14 +1,27 @@
-/*
-This file is part of the Pet-o-Nator project
-Contant: Parts for the bottle cutter
-Autor: Carlos Eduardo Foltran
-
-update 2023-09-25
-update 2023-02-26
-*/
+/**
+ * Project Name :
+ *
+ * Author: Carlos Eduardo Foltran
+ * GitHub: https://github.com/Nartlof/Pet-o-nator
+ * Thingiverse: [Thingiverse Project URL]
+ * License: Creative Commons CC0 1.0 Universal (CC0 1.0)
+ * Description: This is a cutter to make platc tape from PET bottles
+ *
+ * Date Created: 2023-02-26
+ * Last Updated: 2023-09-25
+ * Last Updated: 2025-03-17
+ *
+ * This OpenSCAD file is provided under the Creative Commons CC0 1.0 Universal (CC0 1.0) License.
+ * You are free to use, modify, and distribute this design for any purpose, without any restrictions.
+ *
+ * For more details about the CC0 license, visit: https://creativecommons.org/publicdomain/zero/1.0/
+ */
 
 use <Library\MNut.scad>
 use <Library\RoundCube.scad>
+
+// What to render
+WhatToRender = "All"; //[All, Block, Support]
 
 // Bearing outer diameter
 BearingOuterDiameter = 17;
@@ -37,8 +50,6 @@ FixingScrewShaft = 4;
 // Supporting rod
 RodDiameter = 12;
 RodDistance = 50;
-// What to render
-WhatToRender = "block"; //[block, support]
 
 BlockWidth = 2.5 * BearingOuterDiameter + 2 * BlockRoundingRadius + RodDistance;
 BlockLenght = 1.5 * BearingOuterDiameter + 2 * BlockRoundingRadius + RodDiameter / 2;
@@ -77,7 +88,7 @@ module block()
     // outros com lado igual à soma dos raios do rolamento e da arruela de apoio
     xScrewPosition = (BearingOuterDiameter - BearingOverlap) / 2;
     ySupporScrew = sqrt((BearingOuterDiameter + SupportingWasherDiameterToUse) ^ 2 / 4 - xScrewPosition ^ 2);
-    echo(ySupporScrew);
+    // echo(ySupporScrew);
 
     difference()
     {
@@ -117,12 +128,8 @@ module block()
     }
 }
 
-if (WhatToRender == "block")
-{
-    block();
-}
-
-if (WhatToRender == "support")
+// Peça extra para dar altura ao rolamento mais baixo
+module ScrewSupport()
 {
     difference()
     {
@@ -130,4 +137,33 @@ if (WhatToRender == "support")
         cylinder(h = Heigth, r = BearingOuterDiameter / 3);
         translate([ 0, 0, -.5 ]) cylinder(h = Heigth + 1, d = ScrewType + Gap);
     }
+}
+
+if (WhatToRender == "All")
+{
+    xScrewPosition = (BearingOuterDiameter - BearingOverlap) / 2;
+    ySupporScrew = sqrt((BearingOuterDiameter + SupportingWasherDiameterToUse) ^ 2 / 4 - xScrewPosition ^ 2);
+    translate(v = [ RodDistance / 2 + xScrewPosition, -ySupporScrew / 3, BlockHeight ]) color(c = "blue", alpha = 1.0)
+        ScrewSupport();
+    block();
+}
+if (WhatToRender == "Block")
+{
+    block();
+}
+else if (WhatToRender == "Support")
+{
+    ScrewSupport();
+}
+
+// Modulos para MAKE
+
+module BottleCutterLeftHand() // make me
+{
+    block();
+}
+
+module BottleCutterRigthHand() // make me
+{
+    mirror(v = [ 0, 1, 0 ]) block();
 }

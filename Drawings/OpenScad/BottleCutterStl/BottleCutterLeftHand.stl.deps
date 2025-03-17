@@ -1,0 +1,5 @@
+BottleCutterLeftHand.stl: \
+	/home/eduardo/Pet-o-nator/Drawings/OpenScad/Library/RoundCube.scad \
+	/home/eduardo/Pet-o-nator/Drawings/OpenScad/Library/MNut.scad \
+	/home/eduardo/Pet-o-nator/Drawings/OpenScad/BottleCutter.scad \
+	BottleCutterLeftHand.scad

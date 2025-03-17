@@ -1,0 +1,2 @@
+use <../BottleCutter.scad>
+BottleCutterLeftHand();

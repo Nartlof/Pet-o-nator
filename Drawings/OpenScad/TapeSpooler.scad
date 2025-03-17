@@ -2,13 +2,13 @@
  * Project Name : Pet-o-Nator
  *
  * Author: Carlos Eduardo Foltran
- * GitHub: [GitHub Repository URL]
+ * GitHub: https://github.com/Nartlof/Pet-o-nator
  * Thingiverse: [Thingiverse Project URL]
  * License: Creative Commons CC0 1.0 Universal (CC0 1.0)
  * Description: This file contains the spooler mechanism for pooling the PET tape from the cutter
  *
  * Date Created: 2025-03-09
- * Last Updated: 2025-03-09
+ * Last Updated: 2025-03-17
  *
  * This OpenSCAD file is provided under the Creative Commons CC0 1.0 Universal (CC0 1.0) License.
  * You are free to use, modify, and distribute this design for any purpose, without any restrictions.
@@ -19,8 +19,8 @@
 include <GlobalDefinitions.scad>
 use <Library/Gear/gears.scad>
 use <SpoolAndCarrier.scad>
-
-Renderizar = "All"; //["All","Planet","Sun","PCBase","PCTop","HexAxis","Carrier","Arm","Handle","Core","Cap"]
+// What to render
+WhatToRender = "All"; //["All","Planet","Sun","PCBase","PCTop","HexAxis","Carrier","Arm","Handle","Core","Cap"]
 
 /*[Hidden]*/
 
@@ -442,7 +442,7 @@ module CrankHandleCap() // make me
     }
 }
 
-if (Renderizar == "All")
+if (WhatToRender == "All")
 {
 
     color(c = "blue", alpha = 1.0) render() PlanetsCarrier(base = false);
@@ -476,43 +476,43 @@ if (Renderizar == "All")
         translate(v = [ 0, 0, SpoolUsefulWidth + PartsMinThickness ]) Spool(FenseOnly = true);
     }
 }
-else if (Renderizar == "Planet")
+else if (WhatToRender == "Planet")
 {
     PlanetGear();
 }
-else if (Renderizar == "Sun")
+else if (WhatToRender == "Sun")
 {
     SunGear();
 }
-else if (Renderizar == "PCBase")
+else if (WhatToRender == "PCBase")
 {
     PlanetsCarrier(base = true);
 }
-else if (Renderizar == "PCTop")
+else if (WhatToRender == "PCTop")
 {
     PlanetsCarrierTop();
 }
-else if (Renderizar == "HexAxis")
+else if (WhatToRender == "HexAxis")
 {
     rotate(a = [ 90, 0, 0 ]) HexAxis(gap = 0);
 }
-else if (Renderizar == "Carrier")
+else if (WhatToRender == "Carrier")
 {
     SpoolCarrier();
 }
-else if (Renderizar == "Arm")
+else if (WhatToRender == "Arm")
 {
     CrankArm();
 }
-else if (Renderizar == "Handle")
+else if (WhatToRender == "Handle")
 {
     CrankHandle();
 }
-else if (Renderizar == "Core")
+else if (WhatToRender == "Core")
 {
     crankHandleCore();
 }
-else if (Renderizar == "Cap")
+else if (WhatToRender == "Cap")
 {
     CrankHandleCap();
 }

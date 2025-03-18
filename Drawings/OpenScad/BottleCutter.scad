@@ -17,8 +17,8 @@
  * For more details about the CC0 license, visit: https://creativecommons.org/publicdomain/zero/1.0/
  */
 
-use <Library\MNut.scad>
-use <Library\RoundCube.scad>
+use <Library/MNut.scad>
+use <Library/RoundCube.scad>
 
 // What to render
 WhatToRender = "All"; //[All, Block, Support]

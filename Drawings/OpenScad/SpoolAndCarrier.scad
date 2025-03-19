@@ -8,7 +8,7 @@
  * Description: This file contains the spool and carrier and related definitions
  *
  * Date Created: 2025-03-07
- * Last Updated: [Date of last modification]
+ * Last Updated: 2025-03-19 - Correcting the fins on the carrier when carving
  *
  * This OpenSCAD file is provided under the Creative Commons CC0 1.0 Universal (CC0 1.0) License.
  * You are free to use, modify, and distribute this design for any purpose, without any restrictions.
@@ -24,32 +24,34 @@ module Carrier(carve = false)
     module Base(height, gap)
     {
         partsThickness = PartsMinThickness + 2 * gap;
+        finHeight = height - 2 * PartsMinThickness + 4 * gap;
         // Cilindro central
         cylinder(d = SpoolInternalDiameter + 4 * gap, h = SpoolWidth + 2 * gap, center = true);
-
         for (i = [0:3])
         {
             rotate([ 0, 0, i * 45 ]) hull() union()
             {
                 // Base da aleta
-                cube([ SpoolInternalDiameter + 2 * partsThickness, partsThickness, height - 2 * partsThickness ],
-                     center = true);
+                intersection()
+                {
+                    cube([ SpoolInternalDiameter + 4 * partsThickness, partsThickness, finHeight ], center = true);
+                    cylinder(h = finHeight, r = SpoolInternalDiameter / 2 + partsThickness, center = true);
+                }
                 // Criando as partes inclinadas para facilitar o encaixe do carretel e possibilitar impressão sem
                 // suportes
                 for (k = [ 0, 1 ])
                 {
                     rotate([ k * 180, 0, 0 ])
                     {
-                        translate(v = [ 0, 0, height / 2 - partsThickness ])
+                        translate(v = [ 0, 0, finHeight / 2 ])
                         {
 
                             for (j = [ -1, 1 ])
                             {
-                                translate(v = [ j * SpoolInternalDiameter / 2, 0, 0 ]) scale(v = [ 2, 1, 1 ])
-                                    rotate(a = 45)
+                                translate(v = [ j * SpoolInternalDiameter / 2, 0, 0 ]) rotate(a = 45)
 
-                                        cylinder(h = partsThickness, d1 = partsThickness * sqrt(2), d2 = 0,
-                                                 center = false, $fn = 4);
+                                    cylinder(h = partsThickness, d1 = partsThickness * sqrt(2), d2 = 0, center = false,
+                                             $fn = 4);
                             }
                         }
                     }
@@ -179,5 +181,8 @@ module Spool(FenseOnly = false)
     }
 }
 
-Spool(FenseOnly = false);
+// Carrier(carve = false);
+// Carrier(carve = true);
+
+// Spool(FenseOnly = false);
 // Spool(FenseOnly = true);

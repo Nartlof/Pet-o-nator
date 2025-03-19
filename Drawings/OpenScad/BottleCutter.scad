@@ -10,6 +10,7 @@
  * Date Created: 2023-02-26
  * Last Updated: 2023-09-25
  * Last Updated: 2025-03-17
+ * Last Updated: 2025-03-19
  *
  * This OpenSCAD file is provided under the Creative Commons CC0 1.0 Universal (CC0 1.0) License.
  * You are free to use, modify, and distribute this design for any purpose, without any restrictions.
@@ -166,4 +167,9 @@ module BottleCutterLeftHand() // make me
 module BottleCutterRigthHand() // make me
 {
     mirror(v = [ 0, 1, 0 ]) block();
+}
+
+module BottleCutterScrewSupport() // make me
+{
+    ScrewSupport();
 }

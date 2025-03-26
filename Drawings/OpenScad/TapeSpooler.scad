@@ -68,13 +68,14 @@ Zs = let(Zs_1 = floor(Zr / 2), Zs_2 = Zs_1 - ((Zs_1 % 2 == Zr % 2) ? 0 : 1), Ajt
 // Calculando o número de dentes das engrenagens planeta
 Zp = (Zr - Zs) / 2;
 
-echo("Zr=", Zr);
-echo("Zs=", Zs);
-echo("Zp=", Zp);
-echo("(Zs+Zr)/Np", (Zs + Zr) / Np);
+echo(str("Zr=", Zr));
+echo(str("Zs=", Zs));
+echo(str("Zp=", Zp));
+echo(str("(Zs+Zr)/Np", (Zs + Zr) / Np));
+echo(str("Mechanical gain=", Zr / Zs));
 
 // Calculando o número de engrenagens planeta apenas para checar se é maior que 3
-echo("Np=", floor(180 / asin((Zp + 2) / (Zs + Zp))));
+echo(str("Np=", floor(180 / asin((Zp + 2) / (Zs + Zp)))));
 
 // Calculando o tamanho do hexagono para prender a manivela. Ele deve ter uma medida
 // que permita usar uma chave de boca, ou seja, a altura deve ser um inteiro. A altura h
@@ -326,15 +327,15 @@ module CrankArm() // make me
     crankArmLenght = SpoolFenseDiameter / 2 - CrankArmThickness - CrankScrewD / 2;
     module quartProfile()
     {
-        difference()
+        // difference()
         {
             intersection()
             {
                 translate(v = [ CrankArmThickness - profileRadius, 0 ]) circle(r = profileRadius);
                 square(size = [ CrankArmThickness, CrankArmThickness / 2 ], center = false);
             }
-            translate(v = [ 0, CrankArmThickness / 2 + profileRadius * (1 - (1 - cos(45))), 0 ])
-                circle(r = profileRadius);
+            // translate(v = [ 0, CrankArmThickness / 2 + profileRadius * (1 - (1 - cos(45))), 0 ])
+            //     circle(r = profileRadius);
         }
     }
     module halfProfile()
@@ -345,9 +346,10 @@ module CrankArm() // make me
 
     module ending(d = 10)
     {
-
-        alpha = asin((d / 2 + CrankArmThickness) /
-                     (d + CrankArmThickness)); // Angulo de concordância entre a aste e o engate
+        // relação do ráio do encaixe final com os tapers laterais
+        rMulti = 3;
+        // Angulo de concordância entre a aste e o engate
+        alpha = asin((rMulti * d / 2 + CrankArmThickness) / ((rMulti + 1) * d / 2 + CrankArmThickness));
 
         cylinder(h = CrankArmThickness, d = d + CrankArmThickness, center = true);
         rotate_extrude(angle = 360, convexity = 2) translate(v = [ d / 2, 0, 0 ]) halfProfile();
@@ -357,9 +359,9 @@ module CrankArm() // make me
             mirror(v = [ i, 0, 0 ])
             {
 
-                translate(v = [ sin(alpha), cos(alpha), 0 ] * (d + CrankArmThickness))
+                translate(v = [ sin(alpha), cos(alpha), 0 ] * ((rMulti + 1) * d / 2 + CrankArmThickness))
                     rotate_extrude(angle = 90 - alpha, convexity = 2)
-                        translate(v = [ -d / 2 - CrankArmThickness, 0, 0 ]) halfProfile();
+                        translate(v = [ -rMulti * d / 2 - CrankArmThickness, 0, 0 ]) halfProfile();
             }
         }
     }
@@ -382,8 +384,12 @@ module CrankArm() // make me
             }
             // Encaixe hexagonal
             ending(d = HexSize);
-            cylinder(h = CrankArmThickness / 2 + PartsMinThickness, d = HexSize + 2 * PartsMinThickness,
-                     center = false);
+            hull()
+            {
+
+                cylinder(h = CrankArmThickness / 2 + PartsMinThickness, d = HexSize + 2 * PartsMinThickness,
+                         center = false);
+            }
             // Engate da manopla
             translate(v = [ 0, SpoolFenseDiameter / 2 - CrankArmThickness - CrankScrewD / 2 ]) rotate(a = 180)
                 ending(d = CrankScrewD);

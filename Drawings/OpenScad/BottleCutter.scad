@@ -136,9 +136,9 @@ module ScrewSupport() {
         cylinder(h=LowerBearingHeight, r=BearingOuterDiameter / 3);
     }
     translate([0, 0, -.5]) {
-      cylinder(h=Heigth + 1, d=ScrewType + Gap);
+      cylinder(h=Heigth + 1, d=ScrewType + 2 * Gap);
       translate(v=[-HolesDistance, 0, 0])
-        cylinder(h=Heigth + 1, d=ScrewType + Gap);
+        cylinder(h=Heigth + 1, d=ScrewType + 2 * Gap);
     }
   }
 }

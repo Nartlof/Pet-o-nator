@@ -129,7 +129,12 @@ module ScrewSupport() {
     LowerBearingHeight = Heigth - BearingHeight - 2 * NutHeight;
     HolesDistance = BearingOuterDiameter - BearingOverlap;
     union() {
-      cylinder(h=Heigth, r=BearingOuterDiameter / 3);
+      hull() {
+        postDiameter = BearingOuterDiameter / 3;
+        cylinder(h=Heigth, r=postDiameter);
+        translate(v=[postDiameter, 0, 0])
+          cylinder(h=1, r1=postDiameter, r2=0);
+      }
       translate(v=[-HolesDistance, -BearingOuterDiameter / 3, 0])
         cube([HolesDistance, 2 * BearingOuterDiameter / 3, min(SupportingWasherHeigth, LowerBearingHeight)]);
       translate(v=[-HolesDistance, 0, 0])

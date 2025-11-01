@@ -16,7 +16,7 @@ Display::Display(unsigned long diplaysRefreshTime)
     measuredSpeed = 0;
     measuredTemperature = 0;
     refreshTime = diplaysRefreshTime;
-    nextRefresh = millis();
+    lastRefresh = millis();
     lLcd = LiquidCrystal_I2C(PCF8574_ADDR_A21_A11_A01, 4, 5, 6, 16, 11, 12, 13, 14, POSITIVE);
 }
 
@@ -78,26 +78,30 @@ void Display::setStarted(bool start)
 **************************************************************************/
 void Display::update()
 {
-    if (anyChange && millis() > nextRefresh)
+    if (anyChange)
     {
-        char buffer[21];
-        lLcd.setCursor(0, 0);
-        //               01234567890123456789
-        lLcd.print(F("           Now  Goal"));
-        sprintf(buffer, "Speed      %3d   %3d", measuredSpeed, targetSpeed);
-        lLcd.print(buffer);
-        sprintf(buffer, "Temp (C)   %3d   %3d", measuredTemperature, targetTemperature);
-        lLcd.print(buffer);
-        if (started)
+        unsigned long currentMilis = millis();
+        if (currentMilis - lastRefresh >= refreshTime)
         {
-            lLcd.print(F(" (mm/min)    running"));
-        }
-        else
-        {
+            char buffer[21];
+            lLcd.setCursor(0, 0);
+            //               01234567890123456789
+            lLcd.print(F("           Now  Goal"));
+            sprintf(buffer, "Speed      %3d   %3d", measuredSpeed, targetSpeed);
+            lLcd.print(buffer);
+            sprintf(buffer, "Temp (C)   %3d   %3d", measuredTemperature, targetTemperature);
+            lLcd.print(buffer);
+            if (started)
+            {
+                lLcd.print(F(" (mm/min)    running"));
+            }
+            else
+            {
 
-            lLcd.print(F(" (mm/min)    stopped"));
+                lLcd.print(F(" (mm/min)    stopped"));
+            }
+            anyChange = false;
+            lastRefresh = currentMilis;
         }
-        anyChange = false;
-        nextRefresh = millis() + refreshTime;
     }
 }

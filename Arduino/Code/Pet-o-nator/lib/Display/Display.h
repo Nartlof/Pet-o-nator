@@ -29,7 +29,7 @@ private:
     uint16_t measuredTemperature;
     bool anyChange;
     bool started;
-    unsigned long nextRefresh;
+    unsigned long lastRefresh;
     unsigned long refreshTime;
     LiquidCrystal_I2C lLcd;
     void ajustValue(uint16_t *, float); // rounds and ajusts the value for the sets
